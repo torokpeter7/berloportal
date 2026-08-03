@@ -1,0 +1,9 @@
+@import url('./style.css');
+
+body[data-page="login"] .auth-layout {
+  background: linear-gradient(135deg, rgba(23, 92, 211, 0.04), rgba(77, 141, 254, 0.06));
+}
+
+body[data-page="login"] .auth-card {
+  box-shadow: 0 20px 60px rgba(30, 64, 117, 0.16);
+}

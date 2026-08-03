@@ -1,0 +1,11 @@
+@import url('./style.css');
+
+.page-section.hero-panel {
+  background:
+    radial-gradient(circle at right top, rgba(77, 141, 254, 0.13), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(247, 251, 255, 0.96));
+}
+
+.page-section.hero-panel .hero-copy p {
+  max-width: 64ch;
+}
