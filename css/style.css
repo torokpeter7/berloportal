@@ -1065,3 +1065,125 @@ tbody tr:hover {
     min-height: 44px;
   }
 }
+
+/* Compact phone layout: keep every component inside narrow viewports. */
+@media (max-width: 480px) {
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  #app,
+  .app-shell,
+  .content-shell,
+  .page-main,
+  .page-inner,
+  .page-section,
+  .card,
+  .hero-copy,
+  .stat-card {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .topbar {
+    padding: 10px;
+  }
+
+  .topbar-right {
+    gap: 6px;
+  }
+
+  .topbar-right .btn {
+    min-height: 38px;
+    padding: 8px 10px;
+    font-size: 0.82rem;
+  }
+
+  .icon-button {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+
+  .page-main {
+    padding: 10px;
+  }
+
+  .page-inner,
+  .stat-grid {
+    gap: 10px;
+  }
+
+  .page-section,
+  .card {
+    padding: 14px;
+  }
+
+  .stat-card {
+    padding: 11px 12px;
+  }
+
+  .hero-copy h2,
+  .card-header h3,
+  .list-header h3 {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .hero-copy h2 {
+    font-size: 1.08rem;
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+  }
+
+  .hero-copy p,
+  .card-header p,
+  .list-header p {
+    font-size: 0.78rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  .badge-row {
+    gap: 6px;
+  }
+
+  .tag,
+  .status-badge {
+    padding: 5px 8px;
+    font-size: 0.72rem;
+  }
+
+  .stat-value {
+    font-size: 1.15rem;
+  }
+
+  .stat-label {
+    font-size: 0.76rem;
+  }
+
+  .table-wrap {
+    border-radius: 12px;
+  }
+
+  table {
+    min-width: 0;
+    table-layout: fixed;
+    font-size: 0.68rem;
+  }
+
+  thead th,
+  tbody td {
+    padding: 7px 6px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  thead th {
+    font-size: 0.6rem;
+    letter-spacing: 0.03em;
+  }
+}
