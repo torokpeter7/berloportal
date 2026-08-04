@@ -12,7 +12,7 @@ import {
   toggleStatementPaid,
   toggleUtilityBillPaid,
 } from './data.js';
-import { escapeHtml, formatCurrency, formatDate, monthKey, openModal, closeModal, setLoadingState, wireModalClose, confirmDialog } from './utils.js';
+import { escapeHtml, formatCurrency, formatDate, formatMonth, monthKey, openModal, closeModal, setLoadingState, wireModalClose, confirmDialog } from './utils.js';
 
 const UTILITY_LABELS = {
   electric: 'Villany',
@@ -92,7 +92,7 @@ function renderSummary(statement) {
 
   return `
     <div class="metric-list">
-      <div class="metric-item"><span>Hónap</span><strong>${formatDate(statement.billing_month)}</strong></div>
+      <div class="metric-item"><span>Hónap</span><strong>${formatMonth(statement.billing_month)}</strong></div>
       <div class="metric-item"><span>Lakbér</span><strong>${formatCurrency(statement.rent_amount)}</strong></div>
       <div class="metric-item"><span>Összes fizetendő</span><strong>${formatCurrency(statement.total_amount || statement.rent_amount)}</strong></div>
       <div class="metric-item"><span>Állapot</span><strong>${statement.is_paid ? 'Befizetve' : 'Nincs befizetve'}</strong></div>
@@ -149,7 +149,7 @@ function renderStatementsTable(statements, canEdit) {
         <tbody>
           ${statements.map((statement) => `
             <tr>
-              <td>${formatDate(statement.billing_month)}</td>
+              <td>${formatMonth(statement.billing_month)}</td>
               <td>${escapeHtml(statement.apartment?.title || '-')}</td>
               <td>${escapeHtml(statement.tenant?.full_name || statement.tenant?.email || '-')}</td>
               <td>${formatCurrency(statement.total_amount)}</td>
@@ -239,7 +239,7 @@ function renderStatementModal(leases) {
           <label class="form-field"><span>Fizetési mód</span><input type="text" name="payment_method" placeholder="Átutalás, készpénz..."></label>
           <label class="form-field" style="grid-column:1 / -1"><span>Megjegyzés</span><textarea name="notes" rows="3"></textarea></label>
           <div class="modal-footer" style="grid-column:1 / -1">
-            <div class="small-muted">Ez a havi elszámolás most kizárólag a lakbért tartalmazza.</div>
+            <div class="small-muted">A fogyasztás és a végösszeg automatikusan számolódik mentéskor.</div>
             <div class="toolbar">
               <button class="btn btn-secondary" type="button" data-close-modal>Mégse</button>
               <button class="btn btn-primary" type="submit">Mentés</button>
@@ -504,8 +504,15 @@ function getLatestUtilityByType(utilityBills) {
       return accumulator;
     }
 
-    const current = new Date(accumulator[bill.utility_type].period_start || accumulator[bill.utility_type].period_end || 0).getTime();
-    const candidate = new Date(bill.period_start || bill.period_end || 0).getTime();
+    const current = new Date(
+  accumulator[bill.utility_type].period_start ||
+  accumulator[bill.utility_type].period_end
+).getTime();
+
+const candidate = new Date(
+  bill.period_start ||
+  bill.period_end
+).getTime();
     if (candidate > current) {
       accumulator[bill.utility_type] = bill;
     }

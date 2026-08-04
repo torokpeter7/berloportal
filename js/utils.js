@@ -34,6 +34,20 @@ export function formatNumber(value = 0, fractionDigits = 0) {
 
 export function formatDate(value) {
   if (!value) return 'Nincs megadva';
+
+  // A PostgreSQL `date` mező nem időpont. Ha a böngészővel (`new Date`) olvassuk
+  // be, az UTC éjfélként értelmeződik, ami egyes időzónákban az előző napként
+  // jelenik meg.
+  const dateOnly = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (dateOnly) {
+    const [, year, month, day] = dateOnly.map(Number);
+    return new Intl.DateTimeFormat('hu-HU', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(new Date(year, month - 1, day));
+  }
+
   const date = new Date(value);
   return new Intl.DateTimeFormat('hu-HU', {
     year: 'numeric',
@@ -219,14 +233,26 @@ export function sum(values = []) {
 }
 
 export function parseMonthInput(value) {
-  if (!value) return null;
-  const [year, month] = value.split('-').map(Number);
-  if (!year || !month) return null;
-  return new Date(year, month - 1, 1).toISOString();
+  const match = String(value || '').match(/^(\d{4})-(\d{2})$/);
+  if (!match) return null;
+  return `${match[1]}-${match[2]}-01`;
 }
 
 export function toMonthInput(value) {
   if (!value) return monthKey();
+  const match = String(value).match(/^(\d{4})-(\d{2})/);
+  if (match) return `${match[1]}-${match[2]}`;
   const date = new Date(value);
   return monthKey(date);
+}
+
+export function formatMonth(value) {
+  if (!value) return 'Nincs megadva';
+
+  const [year, month] = String(value).split('-').map(Number);
+
+  return new Intl.DateTimeFormat('hu-HU', {
+    year: 'numeric',
+    month: 'long',
+  }).format(new Date(year, month - 1, 1));
 }

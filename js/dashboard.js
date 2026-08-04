@@ -95,11 +95,32 @@ function tenantDashboard(data, profile) {
       </div>
     </section>
     <section class="stat-grid">
-      <article class="stat-card"><div class="stat-label">Lakbér</div><div class="stat-value">${formatCurrency(latestStatement?.rent_amount || data.lease?.monthly_rent || 0)}</div></article>
-      <article class="stat-card"><div class="stat-label">Villany</div><div class="stat-value">${formatCurrency(latestUtilityByType.electric?.total_amount || 0)}</div></article>
-      <article class="stat-card"><div class="stat-label">Víz</div><div class="stat-value">${formatCurrency(latestUtilityByType.water?.total_amount || 0)}</div></article>
-      <article class="stat-card"><div class="stat-label">Gáz</div><div class="stat-value">${formatCurrency(latestUtilityByType.gas?.total_amount || 0)}</div></article>
-      <article class="stat-card"><div class="stat-label">Összes fizetendő</div><div class="stat-value">${formatCurrency((latestStatement?.total_amount || latestStatement?.rent_amount || 0) + utilityTotal(latestUtilityByType))}</div></article>
+      <article class="stat-card"><div class="stat-label">Lakbér</div><div class="stat-value">${formatCurrency(
+  latestStatement && !latestStatement.is_paid
+    ? latestStatement.rent_amount
+    : 0
+)}</div></article>
+      <article class="stat-card"><div class="stat-label">Villany</div><div class="stat-value">${formatCurrency(
+  latestUtilityByType.electric && !latestUtilityByType.electric.is_paid
+    ? latestUtilityByType.electric.total_amount
+    : 0
+)}</div></article>
+      <article class="stat-card"><div class="stat-label">Víz</div><div class="stat-value">${formatCurrency(
+  latestUtilityByType.water && !latestUtilityByType.water.is_paid
+    ? latestUtilityByType.water.total_amount
+    : 0
+)}</div></article>
+      <article class="stat-card"><div class="stat-label">Gáz</div><div class="stat-value">${formatCurrency(
+  latestUtilityByType.gas && !latestUtilityByType.gas.is_paid
+    ? latestUtilityByType.gas.total_amount
+    : 0
+)}</div></article>
+      <article class="stat-card"><div class="stat-label">Összes fizetendő</div><div class="stat-value">${formatCurrency(
+  (latestStatement && !latestStatement.is_paid
+    ? (latestStatement.total_amount || latestStatement.rent_amount)
+    : 0)
+  + utilityTotal(latestUtilityByType)
+)}</div></article>
     </section>
     <section class="grid-2">
       <article class="card">
@@ -152,7 +173,10 @@ function getLatestUtilityByType(utilityBills) {
 }
 
 function utilityTotal(latestUtilityByType) {
-  return Object.values(latestUtilityByType).reduce((total, bill) => total + (Number(bill?.total_amount) || 0), 0);
+  return Object.values(latestUtilityByType).reduce((total, bill) => {
+    if (!bill || bill.is_paid) return total;
+    return total + (Number(bill.total_amount) || 0);
+  }, 0);
 }
 
 function renderStatementsTable(rows) {

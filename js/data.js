@@ -19,7 +19,9 @@ function statementPayload(form) {
     apartment_id: form.apartment_id || null,
     tenant_id: form.tenant_id || null,
     lease_id: form.lease_id || null,
-    billing_month: parseMonthInput(form.billing_month) || new Date().toISOString(),
+    // A hónap dátum, nem időpont: soha ne küldjünk UTC időbélyeget, mert az
+    // időzónától függően az előző napra (és így az előző hónapra) csúszhat.
+    billing_month: parseMonthInput(form.billing_month) || parseMonthInput(monthKey()),
     rent_amount: rentAmount,
     total_amount: rentAmount,
     is_paid: form.is_paid === 'true' || form.is_paid === true,
@@ -35,7 +37,6 @@ function utilityBillPayload(form) {
     apartment_id: form.apartment_id && String(form.apartment_id).trim() ? form.apartment_id : null,
     tenant_id: form.tenant_id && String(form.tenant_id).trim() ? form.tenant_id : null,
     utility_type: form.utility_type,
-    billing_month: parseMonthInput(form.period_start) || parseMonthInput(form.period_end) || monthKey(),
     period_start: form.period_start || null,
     period_end: form.period_end || null,
     total_amount: Number(form.total_amount) || 0,

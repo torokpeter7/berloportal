@@ -65,10 +65,9 @@ function renderLoginPage() {
     <main class="auth-layout">
       <section class="auth-hero">
         <div class="auth-badge"><i class="fa-solid fa-house-chimney-window"></i> Albérletkezelő</div>
-        <h1>Modern bérleti díj és rezsi adminisztráció Supabase alapon.</h1>
-        <p>Beléptetés, szerepkörök, havi elszámolás, dokumentumok és üzenetek egy letisztult, böngészőből futó felületen.</p>
+        <h1>Albérletkezelő</h1>
+        <p>Albérleteddel kapcsolatos dolgok egy helyen.</p>
         <div class="auth-points">
-          <div><i class="fa-solid fa-shield-halved"></i> RLS védelem</div>
           <div><i class="fa-solid fa-chart-line"></i> Pénzügyi dashboard</div>
           <div><i class="fa-solid fa-folder-tree"></i> Dokumentumkezelés</div>
         </div>
@@ -76,7 +75,6 @@ function renderLoginPage() {
       <section class="auth-card">
         <div class="auth-card-head">
           <h2>Bejelentkezés</h2>
-          <p>Supabase Auth használatával.</p>
         </div>
         <form id="login-form" class="form-grid">
           <label class="form-field">
@@ -89,7 +87,6 @@ function renderLoginPage() {
           </label>
           <div class="auth-actions">
             <button class="btn btn-primary" type="submit"><i class="fa-solid fa-right-to-bracket"></i> Belépés</button>
-            <button class="btn btn-secondary" type="button" id="toggle-register">Regisztráció</button>
           </div>
         </form>
 
