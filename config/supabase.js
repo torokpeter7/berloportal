@@ -1,23 +1,20 @@
-const STORAGE_KEYS = {
-  url: 'alberlet_supabase_url',
-  key: 'alberlet_supabase_anon_key',
+const FIXED_SUPABASE_CONFIG = {
+  url: 'https://ptlultrfkipwkrnwzaro.supabase.co',
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0bHVsdHJma2lwd2tybnd6YXJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU3NDE4ODIsImV4cCI6MjEwMTMxNzg4Mn0.0E7CjiyKIx6bVpaN-bQBqQklcjSZPTrb5S1NwUtOa04',
 };
 
 export function getSupabaseConfig() {
-  return {
-    url: localStorage.getItem(STORAGE_KEYS.url) || '',
-    anonKey: localStorage.getItem(STORAGE_KEYS.key) || '',
-  };
+  return FIXED_SUPABASE_CONFIG;
 }
 
 export function setSupabaseConfig(url, anonKey) {
-  localStorage.setItem(STORAGE_KEYS.url, url.trim());
-  localStorage.setItem(STORAGE_KEYS.key, anonKey.trim());
+  localStorage.setItem(FIXED_SUPABASE_CONFIG.url, url.trim());
+  localStorage.setItem(FIXED_SUPABASE_CONFIG.key, anonKey.trim());
 }
 
 export function clearSupabaseConfig() {
-  localStorage.removeItem(STORAGE_KEYS.url);
-  localStorage.removeItem(STORAGE_KEYS.key);
+  localStorage.removeItem(FIXED_SUPABASE_CONFIG.url);
+  localStorage.removeItem(FIXED_SUPABASE_CONFIG.key);
 }
 
 export function hasSupabaseConfig() {
