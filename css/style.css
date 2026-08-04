@@ -56,6 +56,14 @@ textarea {
   font: inherit;
 }
 
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
 img {
   max-width: 100%;
   display: block;
@@ -260,6 +268,19 @@ img {
   font-weight: 700;
 }
 
+.icon-button {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
 .btn:hover {
   transform: translateY(-1px);
 }
@@ -296,6 +317,10 @@ img {
   min-height: 100vh;
   display: grid;
   grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+}
+
+.sidebar-backdrop {
+  display: none;
 }
 
 .sidebar {
@@ -568,6 +593,7 @@ img {
 
 .table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid var(--border);
   border-radius: 18px;
   background: #fff;
@@ -575,6 +601,7 @@ img {
 
 table {
   width: 100%;
+  min-width: 680px;
   border-collapse: collapse;
 }
 
@@ -800,6 +827,10 @@ tbody tr:hover {
 }
 
 @media (max-width: 1180px) {
+  .app-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .stat-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -818,10 +849,23 @@ tbody tr:hover {
     transform: translateX(-100%);
     transition: transform 0.25s ease;
     z-index: 60;
+    width: min(var(--sidebar-width), 86vw);
+    box-shadow: var(--shadow);
   }
 
   body.sidebar-open .sidebar {
     transform: translateX(0);
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgba(8, 22, 45, 0.42);
+  }
+
+  body.sidebar-open .sidebar-backdrop {
+    display: block;
   }
 
   .mobile-only {
@@ -830,13 +874,54 @@ tbody tr:hover {
 }
 
 @media (max-width: 760px) {
+  body {
+    font-size: 15px;
+  }
+
   .topbar {
     padding: 16px;
     flex-wrap: wrap;
+    min-height: 72px;
+    gap: 12px;
+  }
+
+  .topbar-left {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .topbar-right {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .quick-chip {
+    padding: 8px 10px;
+    font-size: 0.85rem;
+  }
+
+  .user-menu {
+    padding: 4px;
+    border-radius: 14px;
+  }
+
+  .user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+
+  .topbar-right .btn {
+    padding: 10px 12px;
   }
 
   .page-main {
-    padding: 16px;
+    padding: 12px;
+  }
+
+  .page-inner {
+    gap: 14px;
   }
 
   .auth-hero,
@@ -864,6 +949,49 @@ tbody tr:hover {
     border-radius: 18px;
   }
 
+  .page-section,
+  .card {
+    padding: 16px;
+  }
+
+  .stat-card {
+    padding: 14px;
+  }
+
+  .card-header,
+  .list-header,
+  .modal-header,
+  .toolbar-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .page-actions,
+  .page-actions .btn,
+  .auth-actions .btn {
+    width: 100%;
+  }
+
+  .hero-panel .page-actions {
+    justify-content: stretch;
+  }
+
+  .file-row,
+  .metric-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .modal-footer .btn {
+    width: 100%;
+  }
+
   .modal {
     padding: 10px;
   }
@@ -871,5 +999,69 @@ tbody tr:hover {
   .modal-dialog {
     border-radius: 22px;
     padding: 18px;
+    max-height: calc(100vh - 20px);
+  }
+
+  .toast-container {
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+  }
+
+  .toast {
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .topbar {
+    padding: 12px;
+  }
+
+  .page-section,
+  .card,
+  .stat-card {
+    border-radius: 16px;
+  }
+
+  .hero-copy h2 {
+    font-size: 1.2rem;
+    line-height: 1.15;
+  }
+
+  .hero-copy p {
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  .stat-value {
+    font-size: 1.35rem;
+  }
+
+  .stat-label {
+    font-size: 0.86rem;
+  }
+
+  .topbar-right .quick-chip {
+    display: none;
+  }
+
+  .page-title-block .eyebrow {
+    display: none;
+  }
+
+  .auth-hero,
+  .auth-card {
+    padding: 22px 18px;
+  }
+
+  .auth-hero h1 {
+    font-size: 2.3rem;
+  }
+
+  .btn {
+    min-height: 44px;
   }
 }

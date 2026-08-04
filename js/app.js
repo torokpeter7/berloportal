@@ -210,6 +210,7 @@ async function renderAppShell() {
   app.innerHTML = `
     <div class="app-shell">
       <aside class="sidebar" id="sidebar"></aside>
+      <button class="sidebar-backdrop" type="button" data-close-sidebar aria-label="Close menu"></button>
       <div class="content-shell">
         <header class="topbar" id="topbar"></header>
         <main class="page-main">
@@ -259,6 +260,7 @@ function wireSidebar() {
     }
 
     link.addEventListener('click', () => {
+      document.body.classList.remove('sidebar-open');
       if (targetPage !== currentPage) {
         window.location.href = `./${targetPage}.html`;
       }
@@ -273,8 +275,19 @@ function wireNavbar() {
   });
 
   qs('[data-mobile-menu]')?.addEventListener('click', () => {
-    document.body.classList.toggle('sidebar-open');
+    const isOpen = document.body.classList.toggle('sidebar-open');
+    qs('[data-mobile-menu]')?.setAttribute('aria-expanded', String(isOpen));
   });
+
+  qs('[data-close-sidebar]')?.addEventListener('click', closeSidebar);
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeSidebar();
+  });
+}
+
+function closeSidebar() {
+  document.body.classList.remove('sidebar-open');
+  qs('[data-mobile-menu]')?.setAttribute('aria-expanded', 'false');
 }
 
 async function loadCurrentPage() {
