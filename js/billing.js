@@ -40,6 +40,13 @@ export async function renderPage({ root, profile, notify }) {
       canEdit ? listLeases() : Promise.resolve([]),
       canEdit ? listApartments() : Promise.resolve([]),
     ]);
+    const selectedApartmentId = canEdit ? window.sessionStorage.getItem('billing-apartment-id') : null;
+    const visibleStatements = canEdit
+      ? statements.filter((statement) => statement.apartment_id === selectedApartmentId)
+      : statements;
+    const visibleUtilityBills = canEdit
+      ? utilityBills.filter((bill) => bill.apartment_id === selectedApartmentId)
+      : utilityBills;
 
     root.innerHTML = `
       <section class="page-section hero-panel">
@@ -54,35 +61,54 @@ export async function renderPage({ root, profile, notify }) {
           ${canEdit ? '<button class="btn btn-secondary" type="button" data-add-utility><i class="fa-solid fa-bolt"></i> Új közüzemi számla</button>' : ''}
         </div>
       </section>
+      ${canEdit ? renderApartmentFilter(apartments, selectedApartmentId) : ''}
       <section class="grid-2">
         <article class="card">
           <div class="card-header"><div><h3>Havi lakbér összefoglaló</h3><p>Az utolsó rögzített hónap.</p></div></div>
-          ${renderSummary(statements[0] || null)}
+          <div data-billing-summary>${renderSummary(visibleStatements[0] || null)}</div>
         </article>
         <article class="card">
           <div class="card-header"><div><h3>Külön rögzített közüzemi számlák</h3><p>Áram, víz és gáz külön rekordként, időszakkal és végösszeggel.</p></div></div>
-          ${renderUtilitySnapshot(utilityBills)}
+          <div data-utility-snapshot>${renderUtilitySnapshot(visibleUtilityBills)}</div>
         </article>
       </section>
       <section class="page-section">
         <div class="card-header"><div><h3>Havi elszámolások</h3><p>Hónapokra bontott lakbér és összesített fizetendő.</p></div></div>
-        ${renderStatementsTable(statements, canEdit)}
+        <div data-statements-table>${renderStatementsTable(visibleStatements, canEdit)}</div>
       </section>
       <section class="page-section">
           <div class="card-header"><div><h3>Közüzemi számlák</h3><p>Az áram, víz és gáz számlák külön kezelése, időszak és végösszeg alapján.</p></div></div>
-        ${renderUtilityBillsTable(utilityBills, canEdit)}
+        <div data-utility-bills-table>${renderUtilityBillsTable(visibleUtilityBills, canEdit)}</div>
       </section>
       ${canEdit ? renderStatementModal(leases) : ''}
       ${canEdit ? renderUtilityModal(leases) : ''}
     `;
 
     if (canEdit) {
-      wireBillingActions(root, statements, utilityBills, leases, apartments, profile, notify);
+      root.querySelector('[data-apartment-filter]').addEventListener('change', (event) => {
+        window.sessionStorage.setItem('billing-apartment-id', event.target.value);
+        renderPage({ root, profile, notify });
+      });
+      wireBillingActions(root, visibleStatements, visibleUtilityBills, leases, apartments, profile, notify);
     }
   } catch (error) {
     root.innerHTML = `<section class="page-section"><div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-triangle-exclamation"></i></div><h3>Hiba történt</h3><p>${escapeHtml(error.message)}</p></div></section>`;
     notify(error.message, 'error');
   }
+}
+
+function renderApartmentFilter(apartments, selectedApartmentId) {
+  return `
+    <section class="page-section">
+      <label class="form-field" style="max-width: 420px">
+        <span>Lakás kiválasztása</span>
+        <select data-apartment-filter>
+          <option value="">Válassz lakást...</option>
+          ${apartments.map((apartment) => `<option value="${apartment.id}" ${apartment.id === selectedApartmentId ? 'selected' : ''}>${escapeHtml(apartment.title || apartment.address || 'Névtelen lakás')}</option>`).join('')}
+        </select>
+      </label>
+    </section>
+  `;
 }
 
 function renderSummary(statement) {

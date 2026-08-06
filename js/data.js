@@ -32,10 +32,16 @@ function statementPayload(form) {
 }
 
 function utilityBillPayload(form) {
+  // A régebbi adatbázisokban ez a mező kötelező. A számla elszámolási
+  // hónapját az időszak kezdőnapjából vezetjük le.
+  const billingMonth = parseMonthInput(String(form.period_start || '').slice(0, 7))
+    || parseMonthInput(monthKey());
+
   return {
     lease_id: form.lease_id && String(form.lease_id).trim() ? form.lease_id : null,
     apartment_id: form.apartment_id && String(form.apartment_id).trim() ? form.apartment_id : null,
     tenant_id: form.tenant_id && String(form.tenant_id).trim() ? form.tenant_id : null,
+    billing_month: billingMonth,
     utility_type: form.utility_type,
     period_start: form.period_start || null,
     period_end: form.period_end || null,

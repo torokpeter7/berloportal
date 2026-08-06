@@ -122,7 +122,7 @@ function tenantDashboard(data, profile) {
   + utilityTotal(latestUtilityByType)
 )}</div></article>
     </section>
-    <section class="grid-2">
+    <section class="grid-2 tenant-dashboard-grid">
       <article class="card">
         <div class="card-header">
           <div>
@@ -133,8 +133,6 @@ function tenantDashboard(data, profile) {
         ${data.lease ? `
           <div class="metric-list">
             <div class="metric-item"><span>Albérlet</span><strong>${escapeHtml(data.lease.apartment?.title || 'Nincs megadva')}</strong></div>
-            <div class="metric-item"><span>Cím</span><strong>${escapeHtml(data.lease.apartment?.address || 'Nincs megadva')}</strong></div>
-            <div class="metric-item"><span>Kezdés</span><strong>${formatDate(data.lease.start_date)}</strong></div>
             <div class="metric-item"><span>Havi díj</span><strong>${formatCurrency(data.lease.monthly_rent)}</strong></div>
           </div>
         ` : '<div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-house-circle-exclamation"></i></div><h3>Nincs aktív szerződés</h3><p>Az admin még nem rendelt hozzád bérleményt.</p></div>'}

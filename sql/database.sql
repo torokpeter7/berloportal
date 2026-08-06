@@ -77,7 +77,7 @@ create table if not exists public.monthly_statements (
   notes text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  constraint billing_month_unique unique (tenant_id, billing_month)
+  constraint billing_month_unique unique (apartment_id, billing_month)
 );
 
 create index if not exists monthly_statements_tenant_idx on public.monthly_statements (tenant_id);
@@ -91,6 +91,7 @@ create table if not exists public.utility_bills (
   lease_id uuid references public.leases(id) on delete cascade,
   apartment_id uuid not null references public.apartments(id) on delete cascade,
   tenant_id uuid not null references public.profiles(id) on delete cascade,
+  billing_month date not null,
   utility_type text not null check (utility_type in ('electric', 'water', 'gas')),
   period_start date not null,
   period_end date not null,
@@ -113,12 +114,16 @@ alter table public.utility_bills
   add column if not exists period_end date;
 
 alter table public.utility_bills
+  add column if not exists billing_month date;
+
+alter table public.utility_bills
   add column if not exists total_amount numeric(12,2) not null default 0;
 
 create index if not exists utility_bills_tenant_idx on public.utility_bills (tenant_id);
 create index if not exists utility_bills_apartment_idx on public.utility_bills (apartment_id);
 create index if not exists utility_bills_lease_idx on public.utility_bills (lease_id);
 create index if not exists utility_bills_type_idx on public.utility_bills (utility_type);
+create index if not exists utility_bills_billing_month_idx on public.utility_bills (billing_month);
 create index if not exists utility_bills_period_start_idx on public.utility_bills (period_start);
 create index if not exists utility_bills_period_end_idx on public.utility_bills (period_end);
 create index if not exists utility_bills_paid_idx on public.utility_bills (is_paid);

@@ -30,6 +30,10 @@ Egy teljesen statikus, Supabase-alapú webalkalmazás lakások bérleti díjána
 6. Nyisd meg a `pages/login.html` oldalt egy statikus tárhelyről vagy helyi webszerverről.
 7. Add meg a Supabase project URL-t és anon kulcsot a belépő oldalon.
 
+### Meglévő adatbázis frissítése
+
+Ha a hibaüzenet `billing_month_unique`, futtasd le egyszer a Supabase SQL Editorban a `sql/fix_statement_unique_constraint.sql` fájlt. Ezután ugyanarra a hónapra minden lakáshoz külön rögzíthető havi elszámolás.
+
 ## Fontos megjegyzések
 
 - Az alkalmazás backend nélkül működik, a böngészőből közvetlenül a Supabase kliensen keresztül.

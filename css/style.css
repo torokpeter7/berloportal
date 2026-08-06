@@ -556,6 +556,10 @@ img {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.tenant-dashboard-grid {
+  grid-template-columns: minmax(0, 0.35fr) minmax(0, 0.65fr);
+}
+
 .grid-3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
