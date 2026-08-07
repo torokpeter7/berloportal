@@ -1,6 +1,6 @@
 const FIXED_SUPABASE_CONFIG = {
-  url: 'https://ptlultrfkipwkrnwzaro.supabase.co',
-  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0bHVsdHJma2lwd2tybnd6YXJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU3NDE4ODIsImV4cCI6MjEwMTMxNzg4Mn0.0E7CjiyKIx6bVpaN-bQBqQklcjSZPTrb5S1NwUtOa04',
+  url: 'https://supabase.torokhomelab.cloud',
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzg2MDg4NjEyLCJleHAiOjE5NDM3Njg2MTJ9.jhDyUd8Ah3Yx8FiqQ3IQQ0DXAr1hMANW1Aao4SwwQAI',
 };
 
 export function getSupabaseConfig() {
