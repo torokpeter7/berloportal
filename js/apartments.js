@@ -1,10 +1,13 @@
-import { ensureAdminOrRedirect } from './app.js';
+import { ensureStaffOrRedirect } from './app.js';
+import { isAdmin } from './auth.js';
 import { archiveApartment, listApartments, saveApartment } from './data.js';
 import { escapeHtml, formatCurrency, formatNumber, openModal, closeModal, wireModalClose, setLoadingState, showToast, confirmDialog } from './utils.js';
 
 export async function renderPage({ root, profile, notify }) {
-  const allowed = await ensureAdminOrRedirect(profile);
+  const allowed = await ensureStaffOrRedirect(profile);
   if (!allowed) return;
+
+  const canManage = isAdmin(profile);
 
   document.title = 'Albérletek - Albérletkezelő';
   const titleNode = document.querySelector('[data-page-title]');
@@ -13,32 +16,36 @@ export async function renderPage({ root, profile, notify }) {
   setLoadingState(root, 'Albérletek betöltése...');
 
   try {
+    // Kezelő (manager) esetén a szerver (RLS) automatikusan csak a hozzá
+    // rendelt lakásokat adja vissza.
     const apartments = await listApartments();
     root.innerHTML = `
       <section class="page-section hero-panel">
         <div class="hero-copy">
-          <p class="eyebrow">Admin modul</p>
-          <h2>Albérletek kezelése.</h2>
-          <p>Itt hozhatsz létre, szerkeszthetsz és archiválhatsz minden lakást és ingatlant.</p>
+          <p class="eyebrow">${canManage ? 'Admin modul' : 'Kezelt albérletek'}</p>
+          <h2>${canManage ? 'Albérletek kezelése.' : 'A hozzád rendelt albérletek.'}</h2>
+          <p>${canManage ? 'Itt hozhatsz létre, szerkeszthetsz és archiválhatsz minden lakást és ingatlant.' : 'Itt látod azokat a lakásokat, amelyekhez kezelői jogosultságod van.'}</p>
         </div>
         <div class="page-actions">
-          <button class="btn btn-primary" type="button" data-add-apartment><i class="fa-solid fa-plus"></i> Új albérlet</button>
+          ${canManage ? '<button class="btn btn-primary" type="button" data-add-apartment><i class="fa-solid fa-plus"></i> Új albérlet</button>' : ''}
         </div>
       </section>
       <section class="page-section">
-        ${renderTable(apartments)}
+        ${renderTable(apartments, canManage)}
       </section>
-      ${renderModal()}
+      ${canManage ? renderModal() : ''}
     `;
 
-    wireApartmentActions(root, apartments, notify);
+    if (canManage) {
+      wireApartmentActions(root, apartments, notify);
+    }
   } catch (error) {
     root.innerHTML = `<section class="page-section"><div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-triangle-exclamation"></i></div><h3>Hiba történt</h3><p>${escapeHtml(error.message)}</p></div></section>`;
     notify(error.message, 'error');
   }
 }
 
-function renderTable(apartments) {
+function renderTable(apartments, canManage) {
   if (!apartments.length) {
     return '<div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-building-circle-xmark"></i></div><h3>Nincs még albérlet</h3><p>Hozz létre egy új ingatlant a gombbal.</p></div>';
   }
@@ -55,7 +62,7 @@ function renderTable(apartments) {
             <th>Szobák</th>
             <th>Havi díj</th>
             <th>Státusz</th>
-            <th>Műveletek</th>
+            ${canManage ? '<th>Műveletek</th>' : ''}
           </tr>
         </thead>
         <tbody>
@@ -68,12 +75,14 @@ function renderTable(apartments) {
               <td>${apartment.rooms ?? '-'}</td>
               <td>${formatCurrency(apartment.monthly_rent)}</td>
               <td><span class="status-badge ${apartment.is_active ? 'status-paid' : 'status-neutral'}">${apartment.is_active ? 'Aktív' : 'Archivált'}</span></td>
+              ${canManage ? `
               <td>
                 <div class="toolbar">
                   <button class="btn btn-secondary btn-sm" type="button" data-edit-apartment="${apartment.id}"><i class="fa-solid fa-pen"></i> Szerkesztés</button>
                   <button class="btn btn-danger btn-sm" type="button" data-delete-apartment="${apartment.id}"><i class="fa-solid fa-trash"></i> Törlés</button>
                 </div>
               </td>
+              ` : ''}
             </tr>
           `).join('')}
         </tbody>

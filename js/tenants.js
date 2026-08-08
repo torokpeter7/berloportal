@@ -1,9 +1,9 @@
-import { ensureAdminOrRedirect } from './app.js';
+import { ensureStaffOrRedirect } from './app.js';
 import { archiveLease, archiveTenant, listApartments, listLeases, listTenantProfiles, saveLease, saveTenantProfile } from './data.js';
 import { escapeHtml, formatCurrency, formatDate, openModal, closeModal, wireModalClose, setLoadingState, showToast, confirmDialog } from './utils.js';
 
 export async function renderPage({ root, profile, notify }) {
-  const allowed = await ensureAdminOrRedirect(profile);
+  const allowed = await ensureStaffOrRedirect(profile);
   if (!allowed) return;
 
   document.title = 'Albérlők - Albérletkezelő';

@@ -144,3 +144,14 @@ export function isAdmin(profile) {
 export function isTenant(profile) {
   return profile?.role === 'tenant';
 }
+
+export function isManager(profile) {
+  return profile?.role === 'manager';
+}
+
+// "Staff" = admin vagy kezelő (manager). Ők látják a kezelői nézeteket,
+// de a kezelő az adatbázis oldali (RLS) szabályok miatt csak a hozzá
+// rendelt lakásokhoz tartozó adatokat kapja vissza.
+export function isStaff(profile) {
+  return isAdmin(profile) || isManager(profile);
+}

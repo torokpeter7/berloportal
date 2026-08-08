@@ -60,7 +60,7 @@ export async function loadDashboardData(profile) {
   const currentMonth = monthKey();
   const currentMonthStart = `${currentMonth}-01`;
 
-  if (profile.role === 'admin') {
+  if (profile.role === 'admin' || profile.role === 'manager') {
     const [apartmentsRes, leasesRes, paidRes, overdueRes, outstandingRes, tenantsRes] = await Promise.all([
       client.from('apartments').select('id', { count: 'exact', head: true }).eq('is_active', true),
       client.from('leases').select('id', { count: 'exact', head: true }).eq('status', 'active'),

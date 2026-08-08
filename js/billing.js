@@ -1,5 +1,5 @@
-import { isAdmin } from './auth.js';
-import { ensureAdminOrRedirect } from './app.js';
+import { isStaff } from './auth.js';
+import { ensureStaffOrRedirect } from './app.js';
 import {
   archiveStatement,
   archiveUtilityBill,
@@ -27,9 +27,9 @@ const RECENT_STATEMENTS_LIMIT = 3;
 const RECENT_UTILITY_LIMIT = 5;
 
 export async function renderPage({ root, profile, notify }) {
-  const canEdit = isAdmin(profile);
+  const canEdit = isStaff(profile);
   if (canEdit) {
-    const allowed = await ensureAdminOrRedirect(profile);
+    const allowed = await ensureStaffOrRedirect(profile);
     if (!allowed) return;
   }
 
@@ -73,15 +73,16 @@ export async function renderPage({ root, profile, notify }) {
         </div>
       </section>
       ${canEdit ? renderApartmentFilter(apartments, selectedApartmentId) : ''}
-      <section class="grid-2">
+      <section class="${canEdit ? 'grid-3' : 'grid-2'}">
         <article class="card">
           <div class="card-header"><div><h3>Havi lakbér összefoglaló</h3><p>Az utolsó rögzített hónap.</p></div></div>
           <div data-billing-summary>${renderSummary(visibleStatements[0] || null)}</div>
         </article>
         <article class="card">
-          <div class="card-header"><div><h3>Külön rögzített közüzemi számlák</h3><p>Áram, víz és gáz külön rekordként, időszakkal és végösszeggel.</p></div></div>
-          <div data-utility-snapshot>${renderUtilitySnapshot(visibleUtilityBills)}</div>
+          <div class="card-header"><div><h3>${canEdit ? 'Nyitott tételek' : 'Külön rögzített közüzemi számlák'}</h3><p>${canEdit ? 'Lakbér, áram, víz és gáz, amelyek még nincsenek befizetve.' : 'Áram, víz és gáz külön rekordként, időszakkal és végösszeggel.'}</p></div></div>
+          <div data-utility-snapshot>${renderUtilitySnapshot(visibleUtilityBills, visibleStatements, canEdit)}</div>
         </article>
+        ${canEdit ? `<div data-total-owed>${renderTotalOwed(visibleStatements, visibleUtilityBills, selectedApartmentId)}</div>` : ''}
       </section>
       <section class="page-section">
         <div class="card-header"><div><h3>Havi elszámolások</h3><p>Hónapokra bontott lakbér és összesített fizetendő.</p></div></div>
@@ -167,7 +168,51 @@ function renderSummary(statement) {
   `;
 }
 
-function renderUtilitySnapshot(utilityBills) {
+function computeOutstandingTotal(statements, utilityBills) {
+  const rentOutstanding = (statements || []).reduce((total, statement) => {
+    if (!statement || statement.is_paid) return total;
+    return total + (Number(statement.total_amount ?? statement.rent_amount) || 0);
+  }, 0);
+
+  const utilitiesOutstanding = (utilityBills || []).reduce((total, bill) => {
+    if (!bill || bill.is_paid) return total;
+    return total + (Number(bill.total_amount) || 0);
+  }, 0);
+
+  return rentOutstanding + utilitiesOutstanding;
+}
+
+function renderTotalOwed(statements, utilityBills, selectedApartmentId) {
+  const total = computeOutstandingTotal(statements, utilityBills);
+  const hasSelection = Boolean(selectedApartmentId);
+  const canPay = hasSelection && total > 0;
+  return `
+    <article class="card">
+      <div class="card-header"><div><h3>Összesen tartozik</h3><p>Lakbér + áram + víz + gáz, az összes nem fizetett tétel.</p></div></div>
+      <article class="stat-card">
+        <div class="stat-head">
+          <div>
+            <div class="stat-label">Kiválasztott lakás tartozása</div>
+            <div class="stat-value">${formatCurrency(total)}</div>
+          </div>
+          <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+        </div>
+      </article>
+      <div class="page-actions" style="margin-top:16px">
+        <button class="btn btn-primary" type="button" data-pay-all-outstanding ${canPay ? '' : 'disabled'}>
+          <i class="fa-solid fa-circle-check"></i> Mind befizetve
+        </button>
+      </div>
+      ${!hasSelection ? '<p class="small-muted" style="margin-top:8px">Válassz lakást a befizetéshez.</p>' : ''}
+    </article>
+  `;
+}
+
+function renderUtilitySnapshot(utilityBills, statements, canEdit) {
+  if (canEdit) {
+    return renderUnpaidItemsSnapshot(utilityBills, statements);
+  }
+
   if (!utilityBills.length) {
     return '<div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-plug-circle-bolt"></i></div><h3>Nincs még közüzemi számla</h3><p>Az áram, víz és gáz számlák külön rögzíthetők, amikor megérkeznek.</p></div>';
   }
@@ -190,6 +235,48 @@ function renderUtilitySnapshot(utilityBills) {
           </article>
         `;
       }).join('')}
+    </div>
+  `;
+}
+
+// Admin/kezelő nézet: nem a legutolsó rögzített tétel, hanem a még
+// befizetetlen (nyitott) tételek jelennek meg - lakbérrel kiegészítve.
+function renderUnpaidItemsSnapshot(utilityBills, statements) {
+  const unpaidStatements = (statements || []).filter((statement) => !statement.is_paid);
+  const rentTotal = unpaidStatements.reduce((total, statement) => total + (Number(statement.total_amount ?? statement.rent_amount) || 0), 0);
+
+  const tiles = [
+    {
+      label: 'Lakbér',
+      icon: 'fa-house-chimney',
+      total: rentTotal,
+      count: unpaidStatements.length,
+    },
+    ...['electric', 'water', 'gas'].map((type) => {
+      const unpaidBills = (utilityBills || []).filter((bill) => bill.utility_type === type && !bill.is_paid);
+      return {
+        label: UTILITY_LABELS[type],
+        icon: type === 'electric' ? 'fa-bolt' : type === 'water' ? 'fa-droplet' : 'fa-fire',
+        total: unpaidBills.reduce((total, bill) => total + (Number(bill.total_amount) || 0), 0),
+        count: unpaidBills.length,
+      };
+    }),
+  ];
+
+  return `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));gap:16px">
+      ${tiles.map((tile) => `
+        <article class="stat-card">
+          <div class="stat-head">
+            <div>
+              <div class="stat-label">${tile.label}</div>
+              <div class="stat-value">${formatCurrency(tile.total)}</div>
+            </div>
+            <div class="stat-icon"><i class="fa-solid ${tile.icon}"></i></div>
+          </div>
+          <div class="small-muted">${tile.count > 0 ? `${tile.count} nyitott tétel` : 'Nincs nyitott tétel'}</div>
+        </article>
+      `).join('')}
     </div>
   `;
 }
@@ -403,6 +490,30 @@ function wireBillingActions(root, statements, utilityBills, leases, apartments, 
 
   wireModalClose(statementModal);
   wireModalClose(utilityModal);
+
+  root.querySelector('[data-pay-all-outstanding]')?.addEventListener('click', async (event) => {
+    const button = event.currentTarget;
+    const unpaidStatements = statements.filter((statement) => !statement.is_paid);
+    const unpaidUtilityBills = utilityBills.filter((bill) => !bill.is_paid);
+
+    if (!unpaidStatements.length && !unpaidUtilityBills.length) return;
+
+    const confirmed = await confirmDialog('Biztosan befizetettre állítod ennek a lakásnak az összes nyitott tételét (lakbér és közüzemi számlák)?', 'Mind befizetve');
+    if (!confirmed) return;
+
+    button.disabled = true;
+    try {
+      await Promise.all([
+        ...unpaidStatements.map((statement) => toggleStatementPaid(statement.id, true)),
+        ...unpaidUtilityBills.map((bill) => toggleUtilityBillPaid(bill.id, true)),
+      ]);
+      notify('A lakás tartozása befizetettre állítva.', 'success');
+      window.location.reload();
+    } catch (error) {
+      button.disabled = false;
+      notify(error.message, 'error');
+    }
+  });
 
   const statementLeaseSelect = statementForm.querySelector('[name="lease_id"]');
   const statementRentInput = statementForm.querySelector('[name="rent_amount"]');

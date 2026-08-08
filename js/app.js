@@ -1,6 +1,6 @@
 import { hasSupabaseConfig, getSupabaseConfig, setSupabaseConfig, resetSupabaseClient } from '../config/supabase.js';
 import { qs, qsa, showToast, escapeHtml } from './utils.js';
-import { getCurrentProfile, requireSession, requireActiveProfile, signInWithPassword, signUpWithPassword, signOut, updateCurrentUser, isAdmin } from './auth.js';
+import { getCurrentProfile, requireSession, requireActiveProfile, signInWithPassword, signUpWithPassword, signOut, updateCurrentUser, isAdmin, isStaff } from './auth.js';
 
 const PAGE_MODULES = {
   dashboard: () => import('./dashboard.js'),
@@ -15,8 +15,8 @@ const PAGE_MODULES = {
 
 const NAV_ITEMS = [
   { page: 'dashboard', icon: 'fa-gauge-high', label: 'Dashboard', role: 'all' },
-  { page: 'apartments', icon: 'fa-building', label: 'Albérletek', role: 'admin' },
-  { page: 'tenants', icon: 'fa-users', label: 'Albérlők', role: 'admin' },
+  { page: 'apartments', icon: 'fa-building', label: 'Albérletek', role: 'staff' },
+  { page: 'tenants', icon: 'fa-users', label: 'Albérlők', role: 'staff' },
   { page: 'billing', icon: 'fa-file-invoice-dollar', label: 'Havi elszámolás', role: 'all' },
   { page: 'documents', icon: 'fa-file-pdf', label: 'Dokumentumok', role: 'all' },
   { page: 'notifications', icon: 'fa-bell', label: 'Értesítések', role: 'all' },
@@ -255,6 +255,11 @@ function wireSidebar() {
       return;
     }
 
+    if (allowedRole === 'staff' && !isStaff(state.profile)) {
+      link.remove();
+      return;
+    }
+
     if (targetPage === currentPage) {
       link.classList.add('active');
     }
@@ -334,6 +339,17 @@ async function wireGlobalActions() {
 export async function ensureAdminOrRedirect(profile = state.profile) {
   if (!isAdmin(profile)) {
     showToast('Ehhez a nézethez admin jogosultság szükséges.', 'warning');
+    window.location.href = './dashboard.html';
+    return false;
+  }
+  return true;
+}
+
+// Admin vagy kezelő (manager) egyaránt beengedhető; a kezelő az RLS miatt
+// úgyis csak a saját lakásaihoz tartozó adatokat kapja vissza.
+export async function ensureStaffOrRedirect(profile = state.profile) {
+  if (!isStaff(profile)) {
+    showToast('Ehhez a nézethez admin vagy kezelői jogosultság szükséges.', 'warning');
     window.location.href = './dashboard.html';
     return false;
   }

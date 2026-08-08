@@ -1,6 +1,6 @@
 import { loadDashboardData } from './data.js';
 import { escapeHtml, formatCurrency, formatDate, monthKey, setLoadingState } from './utils.js';
-import { isAdmin } from './auth.js';
+import { isStaff } from './auth.js';
 
 export async function renderPage({ root, profile, notify }) {
   document.title = 'Dashboard - Albérletkezelő';
@@ -11,7 +11,7 @@ export async function renderPage({ root, profile, notify }) {
 
   try {
     const data = await loadDashboardData(profile);
-    root.innerHTML = isAdmin(profile) ? adminDashboard(data) : tenantDashboard(data, profile);
+    root.innerHTML = isStaff(profile) ? adminDashboard(data) : tenantDashboard(data, profile);
   } catch (error) {
     root.innerHTML = `<section class="page-section"><div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-triangle-exclamation"></i></div><h3>Nem sikerült betölteni a dashboardot</h3><p>${escapeHtml(error.message)}</p></div></section>`;
     notify(error.message, 'error');

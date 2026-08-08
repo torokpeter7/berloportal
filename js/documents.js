@@ -1,12 +1,12 @@
-import { isAdmin } from './auth.js';
-import { ensureAdminOrRedirect } from './app.js';
+import { isStaff } from './auth.js';
+import { ensureStaffOrRedirect } from './app.js';
 import { deleteDocument, getDocumentDownloadUrl, listApartments, listDocuments, listLeases, listTenantProfiles, uploadDocument } from './data.js';
 import { escapeHtml, formatDateTime, openModal, closeModal, setLoadingState, wireModalClose, confirmDialog } from './utils.js';
 
 export async function renderPage({ root, profile, notify }) {
-  const canEdit = isAdmin(profile);
+  const canEdit = isStaff(profile);
   if (canEdit) {
-    const allowed = await ensureAdminOrRedirect(profile);
+    const allowed = await ensureStaffOrRedirect(profile);
     if (!allowed) return;
   }
 
