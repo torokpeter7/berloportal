@@ -25,7 +25,7 @@ export async function renderPage({ root, profile, notify }) {
           <button class="btn btn-primary" type="button" data-add-tenant><i class="fa-solid fa-user-plus"></i> Új albérlő</button>
         </div>
       </section>
-      <section class="grid-2">
+      <section class="grid-1">
         <article class="card">
           <div class="card-header"><div><h3>Albérlők</h3><p>Profil és aktuális állapot.</p></div></div>
           ${renderTenantTable(tenants)}

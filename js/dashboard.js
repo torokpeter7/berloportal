@@ -87,7 +87,7 @@ function tenantDashboard(data, profile) {
       <div class="hero-copy">
         <p class="eyebrow">Albérlői áttekintés</p>
         <h2>Üdv, ${escapeHtml(profile.full_name || profile.email)}.</h2>
-        <p>Itt a saját lakbér, rezsi, dokumentum és üzenet adataidat látod. Az elmúlt hónapok elszámolásai is elérhetők.</p>
+        <p>Itt a saját lakbér, rezsi, dokumentum és üzenet adataidat látod.</p>
       </div>
       <div class="badge-row">
         <span class="tag status-neutral"><i class="fa-solid fa-bell"></i> ${unreadNotifications} olvasatlan</span>
@@ -126,7 +126,7 @@ function tenantDashboard(data, profile) {
       <article class="card">
         <div class="card-header">
           <div>
-            <h3>Jelenlegi bérlemény</h3>
+            <h3>Aktív szerződés</h3>
             <p>A legutóbbi aktív szerződés adatai.</p>
           </div>
         </div>
@@ -148,7 +148,7 @@ function tenantDashboard(data, profile) {
           <div class="metric-item"><span>Dokumentumok</span><strong>${data.documents.length}</strong></div>
           <div class="metric-item"><span>Üzenetek</span><strong>${data.notifications.length}</strong></div>
         </div>
-        <div style="margin-top:16px">${renderStatementsTable(data.statements.slice(0, 4))}</div>
+        <!-- <div style="margin-top:16px">${renderStatementsTable(data.statements.slice(0, 4))}</div> -->
       </article>
     </section>
   `;

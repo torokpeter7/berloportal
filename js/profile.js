@@ -20,7 +20,7 @@ export async function renderPage({ root, profile, notify }) {
       </section>
       <section class="grid-2">
         <article class="card">
-          <div class="card-header"><div><h3>Profil adatok</h3><p>A profil rekord közvetlen szerkesztése.</p></div></div>
+          <div class="card-header"><div><h3>Profil adatok</h3><p>Pofil közvetlen szerkesztése.</p></div></div>
           <form id="profile-form" class="form-grid">
             <label class="form-field"><span>Teljes név</span><input type="text" name="full_name" value="${escapeHtml(profile.full_name || '')}" required></label>
             <label class="form-field"><span>Telefon</span><input type="text" name="phone" value="${escapeHtml(profile.phone || '')}"></label>
@@ -29,7 +29,7 @@ export async function renderPage({ root, profile, notify }) {
           </form>
         </article>
         <article class="card">
-          <div class="card-header"><div><h3>Biztonság</h3><p>Jelszó és Supabase Auth adatok.</p></div></div>
+          <div class="card-header"><div><h3>Biztonság</h3><p>Jelszó módosítása.</p></div></div>
           <form id="security-form" class="form-grid">
             <label class="form-field"><span>Új jelszó</span><input type="password" name="password" minlength="6"></label>
             <label class="form-field"><span>Jelszó megerősítése</span><input type="password" name="password_confirm" minlength="6"></label>

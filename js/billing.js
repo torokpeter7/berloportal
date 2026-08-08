@@ -15,10 +15,16 @@ import {
 import { escapeHtml, formatCurrency, formatDate, formatMonth, monthKey, openModal, closeModal, setLoadingState, wireModalClose, confirmDialog } from './utils.js';
 
 const UTILITY_LABELS = {
+  all: 'Összes',
   electric: 'Villany',
   water: 'Víz',
   gas: 'Gáz',
 };
+
+const UTILITY_FILTER_TYPES = ['all', 'electric', 'gas', 'water'];
+const DEFAULT_UTILITY_FILTER = 'all';
+const RECENT_STATEMENTS_LIMIT = 3;
+const RECENT_UTILITY_LIMIT = 5;
 
 export async function renderPage({ root, profile, notify }) {
   const canEdit = isAdmin(profile);
@@ -47,13 +53,18 @@ export async function renderPage({ root, profile, notify }) {
     const visibleUtilityBills = canEdit
       ? utilityBills.filter((bill) => bill.apartment_id === selectedApartmentId)
       : utilityBills;
+    const selectedUtilityType = window.sessionStorage.getItem('billing-utility-type') || DEFAULT_UTILITY_FILTER;
+    const filteredUtilityBills = selectedUtilityType === 'all'
+      ? visibleUtilityBills
+      : visibleUtilityBills.filter((bill) => bill.utility_type === selectedUtilityType);
+    const showAllStatements = window.sessionStorage.getItem('billing-statements-show-all') === 'true';
+    const showAllUtilityBills = window.sessionStorage.getItem('billing-utility-show-all') === 'true';
 
     root.innerHTML = `
       <section class="page-section hero-panel">
         <div class="hero-copy">
           <p class="eyebrow">Havi elszámolás</p>
           <h2>${canEdit ? 'Lakbér és külön közüzemi számlák kezelése.' : 'A saját havi elszámolásaid és közüzemi számláid.'}</h2>
-          <p>A havi elszámolás már csak a lakbért tartalmazza, a közüzemi számlák pedig külön, elszámolási időszakkal és végösszeggel rögzíthetők.</p>
         </div>
         <div class="badge-row">
           <span class="tag status-neutral"><i class="fa-solid fa-calendar-days"></i> ${escapeHtml(monthKey())}</span>
@@ -74,20 +85,49 @@ export async function renderPage({ root, profile, notify }) {
       </section>
       <section class="page-section">
         <div class="card-header"><div><h3>Havi elszámolások</h3><p>Hónapokra bontott lakbér és összesített fizetendő.</p></div></div>
-        <div data-statements-table>${renderStatementsTable(visibleStatements, canEdit)}</div>
+        <div data-statements-table>${renderStatementsTable(visibleStatements, canEdit, showAllStatements)}</div>
       </section>
       <section class="page-section">
-          <div class="card-header"><div><h3>Közüzemi számlák</h3><p>Az áram, víz és gáz számlák külön kezelése, időszak és végösszeg alapján.</p></div></div>
-        <div data-utility-bills-table>${renderUtilityBillsTable(visibleUtilityBills, canEdit)}</div>
+          <div class="card-header">
+            <div><h3>Közüzemi számlák</h3><p>Az áram, víz és gáz számlák külön kezelése, időszak és végösszeg alapján.</p></div>
+            ${renderUtilityTypeFilter(selectedUtilityType)}
+          </div>
+        <div data-utility-bills-table>${renderUtilityBillsTable(filteredUtilityBills, canEdit, showAllUtilityBills)}</div>
       </section>
       ${canEdit ? renderStatementModal(leases) : ''}
       ${canEdit ? renderUtilityModal(leases) : ''}
     `;
 
+    root.querySelectorAll('[data-filter-utility-type]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const scrollY = window.scrollY;
+        window.sessionStorage.setItem('billing-utility-type', button.dataset.filterUtilityType);
+        window.sessionStorage.setItem('billing-utility-show-all', 'false');
+        await renderPage({ root, profile, notify });
+        window.scrollTo(0, scrollY);
+      });
+    });
+
+    root.querySelector('[data-toggle-statements-view]')?.addEventListener('click', async () => {
+      const scrollY = window.scrollY;
+      window.sessionStorage.setItem('billing-statements-show-all', String(!showAllStatements));
+      await renderPage({ root, profile, notify });
+      window.scrollTo(0, scrollY);
+    });
+
+    root.querySelector('[data-toggle-utility-view]')?.addEventListener('click', async () => {
+      const scrollY = window.scrollY;
+      window.sessionStorage.setItem('billing-utility-show-all', String(!showAllUtilityBills));
+      await renderPage({ root, profile, notify });
+      window.scrollTo(0, scrollY);
+    });
+
     if (canEdit) {
-      root.querySelector('[data-apartment-filter]').addEventListener('change', (event) => {
+      root.querySelector('[data-apartment-filter]').addEventListener('change', async (event) => {
+        const scrollY = window.scrollY;
         window.sessionStorage.setItem('billing-apartment-id', event.target.value);
-        renderPage({ root, profile, notify });
+        await renderPage({ root, profile, notify });
+        window.scrollTo(0, scrollY);
       });
       wireBillingActions(root, visibleStatements, visibleUtilityBills, leases, apartments, profile, notify);
     }
@@ -154,10 +194,13 @@ function renderUtilitySnapshot(utilityBills) {
   `;
 }
 
-function renderStatementsTable(statements, canEdit) {
+function renderStatementsTable(statements, canEdit, showAll) {
   if (!statements.length) {
     return '<div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-clipboard-list"></i></div><h3>Nincs még havi elszámolás</h3><p>Az első hónapot az új elszámolás gombbal rögzítheted.</p></div>';
   }
+
+  const visibleStatements = showAll ? statements : statements.slice(0, RECENT_STATEMENTS_LIMIT);
+  const hasMore = statements.length > RECENT_STATEMENTS_LIMIT;
 
   return `
     <div class="table-wrap">
@@ -173,7 +216,7 @@ function renderStatementsTable(statements, canEdit) {
           </tr>
         </thead>
         <tbody>
-          ${statements.map((statement) => `
+          ${visibleStatements.map((statement) => `
             <tr>
               <td>${formatMonth(statement.billing_month)}</td>
               <td>${escapeHtml(statement.apartment?.title || '-')}</td>
@@ -194,13 +237,38 @@ function renderStatementsTable(statements, canEdit) {
         </tbody>
       </table>
     </div>
+    ${hasMore ? `
+      <div class="toolbar" style="margin-top: 12px;">
+        <button class="btn btn-secondary btn-sm" type="button" data-toggle-statements-view>
+          ${showAll ? 'Csak az utolsó 3 megjelenítése' : `Összes megtekintése (${statements.length})`}
+        </button>
+      </div>
+    ` : ''}
   `;
 }
 
-function renderUtilityBillsTable(utilityBills, canEdit) {
+function renderUtilityTypeFilter(selectedType) {
+  return `
+    <div class="toolbar" data-utility-type-filter role="group" aria-label="Közüzemi típus szűrő">
+      ${UTILITY_FILTER_TYPES.map((type) => `
+        <button
+          class="btn btn-sm ${type === selectedType ? 'btn-primary' : 'btn-secondary'}"
+          type="button"
+          data-filter-utility-type="${type}"
+          aria-pressed="${type === selectedType}"
+        >${UTILITY_LABELS[type]}</button>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderUtilityBillsTable(utilityBills, canEdit, showAll) {
   if (!utilityBills.length) {
     return '<div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-receipt"></i></div><h3>Nincs még közüzemi számla</h3><p>Az áram, víz és gáz számlákat külön fel tudod vinni.</p></div>';
   }
+
+  const visibleBills = showAll ? utilityBills : utilityBills.slice(0, RECENT_UTILITY_LIMIT);
+  const hasMore = utilityBills.length > RECENT_UTILITY_LIMIT;
 
   return `
     <div class="table-wrap">
@@ -217,7 +285,7 @@ function renderUtilityBillsTable(utilityBills, canEdit) {
           </tr>
         </thead>
         <tbody>
-          ${utilityBills.map((bill) => `
+          ${visibleBills.map((bill) => `
             <tr>
               <td>${escapeHtml(UTILITY_LABELS[bill.utility_type] || bill.utility_type)}</td>
               <td>${formatDate(bill.period_start)} - ${formatDate(bill.period_end)}</td>
@@ -239,6 +307,13 @@ function renderUtilityBillsTable(utilityBills, canEdit) {
         </tbody>
       </table>
     </div>
+    ${hasMore ? `
+      <div class="toolbar" style="margin-top: 12px;">
+        <button class="btn btn-secondary btn-sm" type="button" data-toggle-utility-view>
+          ${showAll ? 'Csak az utolsó 5 megjelenítése' : `Összes megtekintése (${utilityBills.length})`}
+        </button>
+      </div>
+    ` : ''}
   `;
 }
 
