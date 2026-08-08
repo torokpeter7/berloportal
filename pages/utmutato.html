@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>BérlőPortál – Bérlői útmutató</title>
+    <meta name="description" content="BérlőPortál bérlői útmutató – segítség a portál használatához.">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Helvetica, Arial, sans-serif;
+            background: #f5f7fb;
+            color: #172033;
+            line-height: 1.65;
+        }
+
+        /* =========================
+           LAYOUT
+        ========================= */
+
+        .page {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* =========================
+           SIDEBAR
+        ========================= */
+
+        .sidebar {
+            width: 270px;
+            background: #ffffff;
+            border-right: 1px solid #e7eaf0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            padding: 28px 18px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 12px 28px;
+            border-bottom: 1px solid #edf0f4;
+            margin-bottom: 22px;
+        }
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 13px;
+            background: linear-gradient(135deg, #2563eb, #4f46e5);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 21px;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, .20);
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 750;
+            color: #172033;
+        }
+
+        .logo-subtitle {
+            display: block;
+            font-size: 11px;
+            font-weight: 500;
+            color: #8a93a5;
+            margin-top: 1px;
+        }
+
+        .nav-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #9aa2b1;
+            font-weight: 700;
+            padding: 0 12px;
+            margin-bottom: 9px;
+        }
+
+        .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav a {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            text-decoration: none;
+            color: #596273;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 550;
+            transition: .2s ease;
+        }
+
+        .nav a:hover {
+            background: #f1f5ff;
+            color: #2563eb;
+            transform: translateX(2px);
+        }
+
+        .nav-icon {
+            width: 25px;
+            text-align: center;
+            font-size: 17px;
+        }
+
+        .sidebar-footer {
+            margin-top: 30px;
+            padding: 15px 12px;
+            border-radius: 12px;
+            background: #f7f9fc;
+            color: #8992a3;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        /* =========================
+           MAIN
+        ========================= */
+
+        .main {
+            margin-left: 270px;
+            width: calc(100% - 270px);
+            min-height: 100vh;
+        }
+
+        .content {
+            max-width: 1050px;
+            margin: 0 auto;
+            padding: 55px 40px 80px;
+        }
+
+        /* =========================
+           HERO
+        ========================= */
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1d4ed8, #4338ca);
+            border-radius: 24px;
+            padding: 48px;
+            color: white;
+            margin-bottom: 36px;
+            box-shadow: 0 18px 45px rgba(37, 70, 180, .18);
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.07);
+            right: -80px;
+            top: -100px;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            width: 170px;
+            height: 170px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.05);
+            right: 100px;
+            bottom: -100px;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 700px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(255,255,255,.13);
+            border: 1px solid rgba(255,255,255,.16);
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 650;
+            margin-bottom: 18px;
+        }
+
+        .hero h1 {
+            font-size: clamp(30px, 4vw, 44px);
+            line-height: 1.15;
+            margin-bottom: 17px;
+            letter-spacing: -.025em;
+        }
+
+        .hero p {
+            color: rgba(255,255,255,.88);
+            font-size: 16px;
+            max-width: 670px;
+        }
+
+        /* =========================
+           INTRO
+        ========================= */
+
+        .intro {
+            background: white;
+            border: 1px solid #e8ebf1;
+            border-radius: 18px;
+            padding: 27px 29px;
+            margin-bottom: 42px;
+        }
+
+        .intro p {
+            color: #5c6575;
+            font-size: 15px;
+        }
+
+        .intro strong {
+            color: #172033;
+        }
+
+        /* =========================
+           SECTIONS
+        ========================= */
+
+        .section {
+            margin-bottom: 52px;
+            scroll-margin-top: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .section-icon {
+            width: 46px;
+            height: 46px;
+            flex: 0 0 46px;
+            border-radius: 13px;
+            background: #eef3ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 21px;
+        }
+
+        .section-title h2 {
+            font-size: 23px;
+            line-height: 1.3;
+            color: #172033;
+            margin-bottom: 3px;
+        }
+
+        .section-title span {
+            font-size: 12px;
+            color: #8b94a4;
+        }
+
+        .section-text {
+            color: #5c6575;
+            font-size: 15px;
+            margin-left: 61px;
+            max-width: 850px;
+        }
+
+        /* =========================
+           UTILITY CARDS
+        ========================= */
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 23px 0 0 61px;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #e7eaf0;
+            border-radius: 16px;
+            padding: 21px;
+            transition: .2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: #d5dcf0;
+            box-shadow: 0 10px 28px rgba(25, 40, 75, .07);
+        }
+
+        .card-icon {
+            font-size: 25px;
+            margin-bottom: 11px;
+        }
+
+        .card h3 {
+            font-size: 15px;
+            margin-bottom: 5px;
+            color: #20293a;
+        }
+
+        .card p {
+            color: #737c8c;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        /* =========================
+           FIRST LOGIN
+        ========================= */
+
+        .security-box {
+            margin-left: 61px;
+            background: linear-gradient(135deg, #fff8e8, #fffdf7);
+            border: 1px solid #f4dfac;
+            border-radius: 18px;
+            padding: 26px;
+            position: relative;
+        }
+
+        .security-top {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+            margin-bottom: 18px;
+        }
+
+        .security-icon {
+            width: 46px;
+            height: 46px;
+            flex: 0 0 46px;
+            border-radius: 13px;
+            background: #fff0c7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 21px;
+        }
+
+        .security-box h3 {
+            font-size: 17px;
+            margin-bottom: 3px;
+            color: #4b3a14;
+        }
+
+        .security-box p {
+            color: #76643b;
+            font-size: 14px;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 11px;
+            margin-top: 17px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255,255,255,.7);
+            border: 1px solid rgba(219, 194, 134, .35);
+            border-radius: 11px;
+            padding: 11px 13px;
+            color: #5c4b26;
+            font-size: 13px;
+        }
+
+        .step-number {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #eab308;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 750;
+            flex: 0 0 25px;
+        }
+
+        /* =========================
+           BULLET LIST
+        ========================= */
+
+        .check-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            margin-top: 15px;
+        }
+
+        .check-list li {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            color: #5f6878;
+            font-size: 14px;
+        }
+
+        .check {
+            width: 21px;
+            height: 21px;
+            border-radius: 50%;
+            background: #eaf7ef;
+            color: #16a34a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex: 0 0 21px;
+        }
+
+        /* =========================
+           SUMMARY
+        ========================= */
+
+        .summary {
+            background: #fff;
+            border: 1px solid #e7eaf0;
+            border-radius: 20px;
+            padding: 31px;
+            margin-top: 15px;
+        }
+
+        .summary h2 {
+            font-size: 23px;
+            margin-bottom: 8px;
+        }
+
+        .summary > p {
+            color: #6d7585;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .summary-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f8f9fc;
+            border-radius: 12px;
+            padding: 13px 15px;
+        }
+
+        .summary-item-icon {
+            font-size: 19px;
+        }
+
+        .summary-item strong {
+            display: block;
+            font-size: 13px;
+            color: #283143;
+        }
+
+        .summary-item span {
+            display: block;
+            color: #8991a0;
+            font-size: 11px;
+            margin-top: 1px;
+        }
+
+        /* =========================
+           FOOTER
+        ========================= */
+
+        footer {
+            text-align: center;
+            color: #9aa2b1;
+            font-size: 12px;
+            padding: 38px 0 0;
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        .mobile-header {
+            display: none;
+        }
+
+        @media (max-width: 900px) {
+
+            .sidebar {
+                width: 230px;
+            }
+
+            .main {
+                margin-left: 230px;
+                width: calc(100% - 230px);
+            }
+
+            .content {
+                padding: 35px 25px 60px;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                display: none;
+            }
+
+            .main {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .mobile-header {
+                display: flex;
+                position: sticky;
+                top: 0;
+                z-index: 90;
+                height: 64px;
+                background: rgba(255,255,255,.95);
+                backdrop-filter: blur(12px);
+                border-bottom: 1px solid #e7eaf0;
+                align-items: center;
+                padding: 0 18px;
+                gap: 10px;
+            }
+
+            .mobile-logo-icon {
+                width: 35px;
+                height: 35px;
+                border-radius: 10px;
+                background: linear-gradient(135deg, #2563eb, #4f46e5);
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 16px;
+            }
+
+            .mobile-header strong {
+                font-size: 15px;
+            }
+
+            .content {
+                padding: 22px 16px 50px;
+            }
+
+            .hero {
+                padding: 31px 25px;
+                border-radius: 19px;
+            }
+
+            .hero h1 {
+                font-size: 30px;
+            }
+
+            .hero p {
+                font-size: 14px;
+            }
+
+            .intro {
+                padding: 21px;
+            }
+
+            .section {
+                margin-bottom: 40px;
+            }
+
+            .section-header {
+                gap: 11px;
+            }
+
+            .section-icon {
+                width: 40px;
+                height: 40px;
+                flex-basis: 40px;
+                font-size: 18px;
+            }
+
+            .section-title h2 {
+                font-size: 19px;
+            }
+
+            .section-text {
+                margin-left: 0;
+                margin-top: 14px;
+                font-size: 14px;
+            }
+
+            .cards {
+                margin-left: 0;
+                grid-template-columns: 1fr;
+            }
+
+            .security-box {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .summary {
+                padding: 23px;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page">
+
+    <!-- =========================
+         SIDEBAR
+    ========================== -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            <div class="logo-icon">🏠</div>
+
+            <div class="logo-text">
+                BérlőPortál
+                <span class="logo-subtitle">Bérlői útmutató</span>
+            </div>
+        </div>
+
+        <div class="nav-title">Tartalom</div>
+
+        <nav class="nav">
+            <a href="#kezdolap">
+                <span class="nav-icon">🏠</span>
+                Kezdőlap
+            </a>
+
+            <a href="#berleti-dij">
+                <span class="nav-icon">💰</span>
+                Bérleti díj
+            </a>
+
+            <a href="#kozuzemi-szamlak">
+                <span class="nav-icon">💡</span>
+                Közüzemi számlák
+            </a>
+
+            <a href="#dokumentumok">
+                <span class="nav-icon">📄</span>
+                Dokumentumok
+            </a>
+
+            <a href="#alberlet-adatai">
+                <span class="nav-icon">🏢</span>
+                Az albérlet adatai
+            </a>
+
+            <a href="#ertesitesek">
+                <span class="nav-icon">🔔</span>
+                Értesítések
+            </a>
+
+            <a href="#elso-bejelentkezes">
+                <span class="nav-icon">🔐</span>
+                Első bejelentkezés
+            </a>
+
+            <a href="#profil">
+                <span class="nav-icon">👤</span>
+                Profil és kijelentkezés
+            </a>
+
+            <a href="#roviden">
+                <span class="nav-icon">📋</span>
+                Röviden
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <strong>BérlőPortál</strong><br>
+            Minden fontos információ az albérleteddel kapcsolatban egy helyen.
+        </div>
+
+    </aside>
+
+
+    <!-- =========================
+         MAIN
+    ========================== -->
+
+    <main class="main">
+
+        <div class="mobile-header">
+            <div class="mobile-logo-icon">🏠</div>
+            <strong>BérlőPortál</strong>
+        </div>
+
+        <div class="content">
+
+            <!-- HERO -->
+
+            <section class="hero">
+
+                <div class="hero-content">
+
+                    <div class="hero-badge">
+                        📘 Bérlői útmutató
+                    </div>
+
+                    <h1>
+                        BérlőPortál
+                    </h1>
+
+                    <p>
+                        Minden fontos információ az albérleteddel kapcsolatban
+                        egyetlen, könnyen használható online felületen.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- INTRO -->
+
+            <div class="intro">
+
+                <p>
+                    Üdvözlünk a <strong>BérlőPortálon!</strong>
+                </p>
+
+                <p style="margin-top: 9px;">
+                    A BérlőPortál egy egyszerű, online felület, amelynek
+                    segítségével egy helyen tudod megtekinteni az albérleteddel
+                    kapcsolatos legfontosabb információkat és dokumentumokat.
+                </p>
+
+                <p style="margin-top: 9px;">
+                    A portál használatához nincs szükség külön program
+                    telepítésére, a felület számítógépről, telefonról és
+                    táblagépről is elérhető.
+                </p>
+
+            </div>
+
+
+            <!-- KEZDŐLAP -->
+
+            <section class="section" id="kezdolap">
+
+                <div class="section-header">
+
+                    <div class="section-icon">🏠</div>
+
+                    <div class="section-title">
+                        <h2>Kezdőlap</h2>
+                        <span>Gyors áttekintés</span>
+                    </div>
+
+                </div>
+
+                <div class="section-text">
+
+                    A bejelentkezést követően a
+                    <strong>Kezdőlapon</strong> találod az albérleteddel
+                    kapcsolatos legfontosabb információkat és aktuális adatokat.
+
+                    <br><br>
+
+                    Itt gyorsan áttekintheted a portálon elérhető információkat.
+
+                </div>
+
+            </section>
+
+
+            <!-- BÉRLETI DÍJ -->
+
+            <section class="section" id="berleti-dij">
+
+                <div class="section-header">
+
+                    <div class="section-icon">💰</div>
+
+                    <div class="section-title">
+                        <h2>Bérleti díj</h2>
+                        <span>Fizetési információk</span>
+                    </div>
+
+                </div>
+
+                <div class="section-text">
+
+                    A <strong>Bérleti díj</strong> résznél találod a lakással
+                    kapcsolatos bérleti díj információkat.
+
+                    <br><br>
+
+                    Itt nyomon követheted a fizetendő összeget és az adott
+                    időszakhoz kapcsolódó adatokat.
+
+                </div>
+
+            </section>
+
+
+            <!-- KÖZÜZEMI SZÁMLÁK -->
+
+            <section class="section" id="kozuzemi-szamlak">
+
+                <div class="section-header">
+
+                    <div class="section-icon">💡</div>
+
+                    <div class="section-title">
+                        <h2>Közüzemi számlák</h2>
+                        <span>Áram, gáz és víz</span>
+                    </div>
+
+                </div>
+
+                <div class="section-text">
+
+                    A <strong>Közüzemi számlák</strong> menüpontban találod
+                    a lakáshoz kapcsolódó közüzemi számlákat.
+
+                    <br><br>
+
+                    A számlák között külön is tudsz szűrni:
+
+                </div>
+
+                <div class="cards">
+
+                    <div class="card">
+
+                        <div class="card-icon">⚡</div>
+
+                        <h3>Áram</h3>
+
+                        <p>
+                            Az elektromos árammal kapcsolatos számlák
+                            megtekintése.
+                        </p>
+
+                    </div>
+
+                    <div class="card">
+
+                        <div class="card-icon">🔥</div>
+
+                        <h3>Gáz</h3>
+
+                        <p>
+                            A gázfogyasztással kapcsolatos számlák
+                            megtekintése.
+                        </p>
+
+                    </div>
+
+                    <div class="card">
+
+                        <div class="card-icon">💧</div>
+
+                        <h3>Víz</h3>
+
+                        <p>
+                            A vízfogyasztással kapcsolatos számlák
+                            megtekintése.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="section-text" style="margin-top: 18px;">
+
+                    Így könnyen megtalálhatod azt a számlát, amelyre
+                    éppen szükséged van.
+
+                </div>
+
+            </section>
+
+
+            <!-- DOKUMENTUMOK -->
+
+            <section class="section" id="dokumentumok">
+
+                <div class="section-header">
+
+                    <div class="section-icon">📄</div>
+
+                    <div class="section-title">
+                        <h2>Dokumentumok</h2>
+                        <span>Fontos dokumentumok egy helyen</span>
+                    </div>
+
+                </div>
+
+                <div class="section-text">
+
+                    A <strong>Dokumentumok</strong> menüpontban találhatod
+                    a bérléssel kapcsolatos fontos dokumentumokat.
+
+                    <ul class="check-list">
+
+                        <li>
+                            <span class="check">✓</span>
+                            Az albérlethez kapcsolódó egyéb dokumentumok
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Fontos, később is visszakereshető fájlok
+                        </li>
+
+                    </ul>
+
+                </div>
+
+            </section>
+
+
+            <!-- ALBÉRLET ADATAI -->
+
+            <section class="section" id="alberlet-adatai">
+
+                <div class="section-header">
+
+                    <div class="section-icon">🏢</div>
+
+                    <div class="section-title">
+                        <h2>Az albérlet adatai</h2>
+                        <span>A lakással kapcsolatos információk</span>
+                    </div>
+
+                </div>
+
+                <div class="section-text">
+
+                    Az albérlethez kapcsolódó adatok egy helyen megtalálhatók
+                    a portálon, így nem kell külön üzenetekből vagy papírokból
+                    kikeresned a legfontosabb információkat.
+
+                </div>
+
+            </section>
+
+
+            <!-- ÉRTESÍTÉSEK -->
+
+            <section class="section" id="ertesitesek">
+
+                <div class="section-header">
+
+                    <div class="section-icon">🔔</div>
+
+                    <div class="section-title">
+                        <h2>Értesítések és fontos információk</h2>
+                        <span>Maradj naprakész</span>
+                    </div>
+
+                </div>
+
+                <div class="section-text">
+
+                    Amennyiben új információ, számla vagy egyéb fontos adat
+                    kerül fel a portálra, azt a felületen tudod megtekinteni.
+
+                    <br><br>
+
+                    Érdemes ezért időnként bejelentkezni és ellenőrizni
+                    a portált.
+
+                </div>
+
+            </section>
+
+
+            <!-- ELSŐ BEJELENTKEZÉS -->
+
+            <section class="section" id="elso-bejelentkezes">
+
+                <div class="section-header">
+
+                    <div class="section-icon">🔐</div>
+
+                    <div class="section-title">
+                        <h2>Első bejelentkezés</h2>
+                        <span>Fontos biztonsági lépés</span>
+                    </div>
+
+                </div>
+
+                <div class="security-box">
+
+                    <div class="security-top">
+
+                        <div class="security-icon">
+                            🔐
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                Az első bejelentkezéskor kötelező a jelszó
+                                megváltoztatása
+                            </h3>
+
+                            <p>
+                                Ez a fiókod biztonsága érdekében szükséges.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <div class="steps">
+
+                        <div class="step">
+
+                            <span class="step-number">1</span>
+
+                            <span>
+                                Jelentkezz be a kapott felhasználónévvel
+                                és jelszóval.
+                            </span>
+
+                        </div>
+
+                        <div class="step">
+
+                            <span class="step-number">2</span>
+
+                            <span>
+                                Változtasd meg a jelszavadat a Menü -> Profil -> Jelszó módosítása menüpontban.
+                            </span>
+
+                        </div>
+
+                        <div class="step">
+
+                            <span class="step-number">3</span>
+
+                            <span>
+                                Válassz egy erős, egyedi jelszót.
+                            </span>
+
+                        </div>
+
+                        <div class="step">
+
+                            <span class="step-number">4</span>
+
+                            <span>
+                                A későbbi bejelentkezéseknél már az új
+                                jelszavadat használd.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <p style="margin-top: 18px; font-size: 13px;">
+                        <strong>Fontos:</strong>
+                        olyan jelszót válassz, amelyet más szolgáltatásban
+                        nem használsz, és ne oszd meg másokkal.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- PROFIL -->
+
+            <section class="section" id="profil">
+
+                <div class="section-header">
+
+                    <div class="section-icon">👤</div>
+
+                    <div class="section-title">
+                        <h2>Profil és kijelentkezés</h2>
+                        <span>Fiókod kezelése</span>
+                    </div>
+
+                </div>
+
+                <div class="section-text">
+
+                    A profilodhoz kapcsolódó beállításokat a felhasználói
+                    menüben találod.
+
+                    <br><br>
+
+                    Ha befejezted a portál használatát, különösen közös vagy
+                    nyilvános számítógép használata esetén, mindig jelentkezz ki.
+
+                </div>
+
+            </section>
+
+
+            <!-- RÖVIDEN -->
+
+            <section class="section" id="roviden">
+
+                <div class="summary">
+
+                    <h2>📋 Röviden</h2>
+
+                    <p>
+                        A <strong>BérlőPortál</strong> célja, hogy az
+                        albérleteddel kapcsolatos fontos információkat egyetlen,
+                        könnyen elérhető helyen találd meg.
+                    </p>
+
+                    <div class="summary-grid">
+
+                        <div class="summary-item">
+
+                            <div class="summary-item-icon">🏠</div>
+
+                            <div>
+                                <strong>Kezdőlap</strong>
+                                <span>Gyors áttekintés</span>
+                            </div>
+
+                        </div>
+
+                        <div class="summary-item">
+
+                            <div class="summary-item-icon">💰</div>
+
+                            <div>
+                                <strong>Bérleti díj</strong>
+                                <span>Bérleti díjjal kapcsolatos információk</span>
+                            </div>
+
+                        </div>
+
+                        <div class="summary-item">
+
+                            <div class="summary-item-icon">💡</div>
+
+                            <div>
+                                <strong>Közüzemi számlák</strong>
+                                <span>Áram, gáz és víz számlák</span>
+                            </div>
+
+                        </div>
+
+                        <div class="summary-item">
+
+                            <div class="summary-item-icon">📄</div>
+
+                            <div>
+                                <strong>Dokumentumok</strong>
+                                <span>Fontos dokumentumok</span>
+                            </div>
+
+                        </div>
+
+                        <div class="summary-item">
+
+                            <div class="summary-item-icon">👤</div>
+
+                            <div>
+                                <strong>Profil</strong>
+                                <span>Felhasználói adatok és beállítások</span>
+                            </div>
+
+                        </div>
+
+                        <div class="summary-item">
+
+                            <div class="summary-item-icon">🔔</div>
+
+                            <div>
+                                <strong>Értesítések</strong>
+                                <span>Új információk és fontos adatok</span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- FOOTER -->
+
+            <footer>
+
+                Ha kérdésed vagy problémád van a portál használatával
+                kapcsolatban, keresd a bérbeadót / kezelőt.
+
+                <br><br>
+
+                © 2026 BérlőPortál
+
+            </footer>
+
+        </div>
+
+    </main>
+
+</div>
+
+</body>
+</html>
