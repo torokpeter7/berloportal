@@ -19,9 +19,17 @@ const UTILITY_LABELS = {
   electric: 'Villany',
   water: 'Víz',
   gas: 'Gáz',
+  other: 'Egyéb',
 };
 
-const UTILITY_FILTER_TYPES = ['all', 'electric', 'gas', 'water'];
+const UTILITY_ICONS = {
+  electric: 'fa-bolt',
+  water: 'fa-droplet',
+  gas: 'fa-fire',
+  other: 'fa-receipt',
+};
+
+const UTILITY_FILTER_TYPES = ['all', 'electric', 'gas', 'water', 'other'];
 const DEFAULT_UTILITY_FILTER = 'all';
 const RECENT_STATEMENTS_LIMIT = 3;
 const RECENT_UTILITY_LIMIT = 5;
@@ -220,16 +228,17 @@ function renderUtilitySnapshot(utilityBills, statements, canEdit) {
   const latestByType = getLatestUtilityByType(utilityBills);
   return `
     <div class="grid-3">
-      ${['electric', 'water', 'gas'].map((type) => {
+      ${['electric', 'water', 'gas', 'other'].map((type) => {
         const bill = latestByType[type];
+        const label = type === 'other' && bill?.label ? `${UTILITY_LABELS[type]} (${escapeHtml(bill.label)})` : UTILITY_LABELS[type];
         return `
           <article class="stat-card">
             <div class="stat-head">
               <div>
-                <div class="stat-label">${UTILITY_LABELS[type]}</div>
+                <div class="stat-label">${label}</div>
                 <div class="stat-value">${bill ? formatCurrency(bill.total_amount) : '-'}</div>
               </div>
-              <div class="stat-icon"><i class="fa-solid ${type === 'electric' ? 'fa-bolt' : type === 'water' ? 'fa-droplet' : 'fa-fire'}"></i></div>
+              <div class="stat-icon"><i class="fa-solid ${UTILITY_ICONS[type]}"></i></div>
             </div>
             <div class="small-muted">${bill ? `${formatDate(bill.period_start)} - ${formatDate(bill.period_end)}` : 'Nincs rögzítve'}</div>
           </article>
@@ -252,11 +261,11 @@ function renderUnpaidItemsSnapshot(utilityBills, statements) {
       total: rentTotal,
       count: unpaidStatements.length,
     },
-    ...['electric', 'water', 'gas'].map((type) => {
+    ...['electric', 'water', 'gas', 'other'].map((type) => {
       const unpaidBills = (utilityBills || []).filter((bill) => bill.utility_type === type && !bill.is_paid);
       return {
         label: UTILITY_LABELS[type],
-        icon: type === 'electric' ? 'fa-bolt' : type === 'water' ? 'fa-droplet' : 'fa-fire',
+        icon: UTILITY_ICONS[type],
         total: unpaidBills.reduce((total, bill) => total + (Number(bill.total_amount) || 0), 0),
         count: unpaidBills.length,
       };
@@ -374,7 +383,7 @@ function renderUtilityBillsTable(utilityBills, canEdit, showAll) {
         <tbody>
           ${visibleBills.map((bill) => `
             <tr>
-              <td>${escapeHtml(UTILITY_LABELS[bill.utility_type] || bill.utility_type)}</td>
+              <td>${escapeHtml(bill.utility_type === 'other' && bill.label ? `${UTILITY_LABELS.other}: ${bill.label}` : (UTILITY_LABELS[bill.utility_type] || bill.utility_type))}</td>
               <td>${formatDate(bill.period_start)} - ${formatDate(bill.period_end)}</td>
               <td>${escapeHtml(bill.apartment?.title || '-')}</td>
               <td>${escapeHtml(bill.tenant?.full_name || bill.tenant?.email || '-')}</td>
@@ -456,7 +465,8 @@ function renderUtilityModal(leases) {
           <input type="hidden" name="id">
           <input type="hidden" name="apartment_id">
           <input type="hidden" name="tenant_id">
-          <label class="form-field"><span>Típus</span><select name="utility_type" required><option value="electric">Villany</option><option value="water">Víz</option><option value="gas">Gáz</option></select></label>
+          <label class="form-field"><span>Típus</span><select name="utility_type" required><option value="electric">Villany</option><option value="water">Víz</option><option value="gas">Gáz</option><option value="other">Egyéb</option></select></label>
+          <label class="form-field" data-utility-label-field style="display:none"><span>Megnevezés</span><input type="text" name="label" placeholder="MOHU szemétdíj, Közös költség..."></label>
           <label class="form-field"><span>Szerződés</span><select name="lease_id" required>${leaseOptions}</select></label>
           <label class="form-field"><span>Elszámolás kezdete</span><input type="date" name="period_start" required></label>
           <label class="form-field"><span>Elszámolás vége</span><input type="date" name="period_end" required></label>
@@ -490,6 +500,19 @@ function wireBillingActions(root, statements, utilityBills, leases, apartments, 
 
   wireModalClose(statementModal);
   wireModalClose(utilityModal);
+
+  const utilityTypeSelect = utilityForm.querySelector('[name="utility_type"]');
+  const utilityLabelField = utilityForm.querySelector('[data-utility-label-field]');
+  const utilityLabelInput = utilityForm.querySelector('[name="label"]');
+
+  function syncUtilityLabelField() {
+    const isOther = utilityTypeSelect.value === 'other';
+    utilityLabelField.style.display = isOther ? '' : 'none';
+    utilityLabelInput.required = isOther;
+    if (!isOther) utilityLabelInput.value = '';
+  }
+
+  utilityTypeSelect.addEventListener('change', syncUtilityLabelField);
 
   root.querySelector('[data-pay-all-outstanding]')?.addEventListener('click', async (event) => {
     const button = event.currentTarget;
@@ -546,6 +569,7 @@ function wireBillingActions(root, statements, utilityBills, leases, apartments, 
       utilityForm.tenant_id.value = firstLease.tenant_id || '';
     }
     utilityTitle.textContent = 'Új közüzemi számla';
+    syncUtilityLabelField();
     openModal(utilityModal);
   });
 
@@ -600,6 +624,8 @@ function wireBillingActions(root, statements, utilityBills, leases, apartments, 
       if (!bill) return;
       utilityForm.id.value = bill.id;
       utilityForm.utility_type.value = bill.utility_type;
+      utilityForm.label.value = bill.label || '';
+      syncUtilityLabelField();
       utilityForm.lease_id.value = bill.lease_id;
       utilityForm.apartment_id.value = bill.apartment_id || '';
       utilityForm.tenant_id.value = bill.tenant_id || '';
@@ -729,5 +755,5 @@ const candidate = new Date(
       accumulator[bill.utility_type] = bill;
     }
     return accumulator;
-  }, { electric: null, water: null, gas: null });
+  }, { electric: null, water: null, gas: null, other: null });
 }

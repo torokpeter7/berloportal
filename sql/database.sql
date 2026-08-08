@@ -92,7 +92,11 @@ create table if not exists public.utility_bills (
   apartment_id uuid not null references public.apartments(id) on delete cascade,
   tenant_id uuid not null references public.profiles(id) on delete cascade,
   billing_month date not null,
-  utility_type text not null check (utility_type in ('electric', 'water', 'gas')),
+  utility_type text not null check (utility_type in ('electric', 'water', 'gas', 'other')),
+  -- Csak az 'other' típusnál kötelező/érdemi: a konkrét tétel neve
+  -- (pl. "MOHU szemétdíj", "Közös költség"). Áram/víz/gáznál üres marad,
+  -- hogy az egyediségi megkötés ne változzon számukra.
+  label text not null default '',
   period_start date not null,
   period_end date not null,
   total_amount numeric(12,2) not null default 0,
@@ -104,7 +108,7 @@ create table if not exists public.utility_bills (
   notes text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  constraint utility_bill_unique unique (tenant_id, utility_type, period_start, period_end)
+  constraint utility_bill_unique unique (tenant_id, utility_type, label, period_start, period_end)
 );
 
 alter table public.utility_bills
@@ -118,6 +122,9 @@ alter table public.utility_bills
 
 alter table public.utility_bills
   add column if not exists total_amount numeric(12,2) not null default 0;
+
+alter table public.utility_bills
+  add column if not exists label text not null default '';
 
 create index if not exists utility_bills_tenant_idx on public.utility_bills (tenant_id);
 create index if not exists utility_bills_apartment_idx on public.utility_bills (apartment_id);

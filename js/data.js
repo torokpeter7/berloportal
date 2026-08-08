@@ -43,6 +43,10 @@ function utilityBillPayload(form) {
     tenant_id: form.tenant_id && String(form.tenant_id).trim() ? form.tenant_id : null,
     billing_month: billingMonth,
     utility_type: form.utility_type,
+    // Csak 'other' típusnál érdemi: a konkrét tétel neve (pl. "MOHU
+    // szemétdíj", "Közös költség"). Áram/víz/gáznál mindig üres, hogy az
+    // adatbázis oldali egyediségi megkötés ne törjön meg.
+    label: form.utility_type === 'other' ? String(form.label || '').trim() : '',
     period_start: form.period_start || null,
     period_end: form.period_end || null,
     total_amount: Number(form.total_amount) || 0,
@@ -157,6 +161,7 @@ export async function loadDashboardData(profile) {
       .select(`
         id,
         utility_type,
+        label,
         period_start,
         period_end,
         total_amount,
@@ -165,8 +170,13 @@ export async function loadDashboardData(profile) {
         apartment:apartments(title, address)
       `)
       .eq('tenant_id', profile.id)
+      // Csak a nyitott (nem fizetett) tételek számítanak a dashboard
+      // kártyáiban és az "Összes fizetendő" összegben, ezért ezeket limit
+      // nélkül kérjük le - így egy régebbi dátumú, de még nyitott "Egyéb"
+      // tétel sem eshet ki egy sima "utolsó N" mintavételezés miatt.
+      .eq('is_paid', false)
       .order('period_start', { ascending: false })
-      .limit(8),
+      .limit(50),
     client
       .from('notifications')
       .select('id, title, message, read_at, created_at, sender_id')
@@ -442,6 +452,7 @@ export async function listUtilityBills({ profile, tenantId = null, utilityType =
       apartment_id,
       tenant_id,
       utility_type,
+      label,
       period_start,
       period_end,
       total_amount,
