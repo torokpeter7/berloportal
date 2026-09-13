@@ -224,6 +224,7 @@ async function renderAppShell() {
 
   qs('#sidebar').innerHTML = sidebarMarkup;
   qs('#topbar').innerHTML = navbarMarkup;
+  document.body.classList.toggle('admin-user', isAdmin(state.profile));
   updateUserBadge();
   wireSidebar();
   wireNavbar();

@@ -319,6 +319,40 @@ img {
   grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
 }
 
+body.admin-user .app-shell {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+body.admin-user .sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  z-index: 60;
+  width: min(var(--sidebar-width), 86vw);
+  box-shadow: var(--shadow);
+}
+
+body.admin-user.sidebar-open .sidebar {
+  transform: translateX(0);
+}
+
+body.admin-user .sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(8, 22, 45, 0.42);
+}
+
+body.admin-user.sidebar-open .sidebar-backdrop {
+  display: block;
+}
+
+body.admin-user .mobile-only {
+  display: inline-flex;
+}
+
 .sidebar-backdrop {
   display: none;
 }
