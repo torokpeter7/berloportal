@@ -43,18 +43,13 @@ function utilityBillPayload(form) {
     tenant_id: form.tenant_id && String(form.tenant_id).trim() ? form.tenant_id : null,
     billing_month: billingMonth,
     utility_type: form.utility_type,
-    // Csak 'other' típusnál érdemi: a konkrét tétel neve (pl. "MOHU
-    // szemétdíj", "Közös költség"). Áram/víz/gáznál mindig üres, hogy az
-    // adatbázis oldali egyediségi megkötés ne törjön meg.
-    label: form.utility_type === 'other' ? String(form.label || '').trim() : '',
+    label: form.utility_type === 'other'
+      ? String(form.label || '').trim()
+      : '',
     period_start: form.period_start || null,
     period_end: form.period_end || null,
     total_amount: Number(form.total_amount) || 0,
-    received_at: form.received_at || null,
-    due_date: form.due_date || null,
     is_paid: form.is_paid === 'true' || form.is_paid === true,
-    paid_at: form.paid_at || null,
-    payment_method: form.payment_method || null,
     notes: form.notes || null,
   };
 }
@@ -65,19 +60,21 @@ export async function loadDashboardData(profile) {
   const currentMonthStart = `${currentMonth}-01`;
 
   if (profile.role === 'admin' || profile.role === 'manager') {
-    const [apartmentsRes, leasesRes, paidRes, overdueRes, outstandingRes, tenantsRes] = await Promise.all([
+    const [apartmentsRes, leasesRes, paidRes, overdueRes, outstandingRes, outstandingUtilityRes, tenantsRes] = await Promise.all([
       client.from('apartments').select('id', { count: 'exact', head: true }).eq('is_active', true),
       client.from('leases').select('id', { count: 'exact', head: true }).eq('status', 'active'),
       client.from('monthly_statements').select('id', { count: 'exact', head: true }).eq('is_paid', true).gte('billing_month', currentMonthStart),
       client.from('monthly_statements').select('id', { count: 'exact', head: true }).eq('is_paid', false).lte('billing_month', currentMonthStart),
       client.from('monthly_statements').select('total_amount').eq('is_paid', false),
+      client.from('utility_bills').select('total_amount').eq('is_paid', false),
       client.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'tenant').eq('is_active', true),
     ]);
 
-    const error = apartmentsRes.error || leasesRes.error || paidRes.error || overdueRes.error || outstandingRes.error || tenantsRes.error;
+    const error = apartmentsRes.error || leasesRes.error || paidRes.error || overdueRes.error || outstandingRes.error || outstandingUtilityRes.error || tenantsRes.error;
     if (error) throw error;
 
-    const outstanding = (outstandingRes.data || []).reduce((total, item) => total + (Number(item.total_amount) || 0), 0);
+    const rentOutstanding = (outstandingRes.data || []).reduce((total, item) => total + (Number(item.total_amount) || 0), 0);
+    const utilityOutstanding = (outstandingUtilityRes.data || []).reduce((total, item) => total + (Number(item.total_amount) || 0), 0);
 
     const recentStatementsRes = await client
       .from('monthly_statements')
@@ -95,23 +92,6 @@ export async function loadDashboardData(profile) {
 
     if (recentStatementsRes.error) throw recentStatementsRes.error;
 
-    const recentLeasesRes = await client
-      .from('leases')
-      .select(`
-        id,
-        start_date,
-        end_date,
-        status,
-        deposit_amount,
-        monthly_rent,
-        apartment:apartments(title, address),
-        tenant:profiles(full_name, email)
-      `)
-      .order('created_at', { ascending: false })
-      .limit(5);
-
-    if (recentLeasesRes.error) throw recentLeasesRes.error;
-
     return {
       counts: {
         apartments: apartmentsRes.count || 0,
@@ -119,10 +99,9 @@ export async function loadDashboardData(profile) {
         activeLeases: leasesRes.count || 0,
         paidRent: paidRes.count || 0,
         overdueRent: overdueRes.count || 0,
-        outstanding,
+        outstanding: rentOutstanding + utilityOutstanding,
       },
       recentStatements: recentStatementsRes.data || [],
-      recentLeases: recentLeasesRes.data || [],
     };
   }
 
@@ -207,7 +186,7 @@ export async function listApartments() {
   const client = await supabase();
   const { data, error } = await client
     .from('apartments')
-    .select('id, title, code, address, monthly_rent, area_sqm, rooms, notes, is_active, created_at, updated_at')
+    .select('id, title, code, address, monthly_rent, notes, is_active, created_at, updated_at')
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data || [];
@@ -220,8 +199,6 @@ export async function saveApartment(payload) {
     code: payload.code || null,
     address: payload.address || null,
     monthly_rent: Number(payload.monthly_rent) || 0,
-    area_sqm: Number(payload.area_sqm) || null,
-    rooms: Number(payload.rooms) || null,
     notes: payload.notes || null,
     is_active: payload.is_active === 'true' || payload.is_active === true,
   };
@@ -653,6 +630,8 @@ export async function saveAppSettings(payload) {
     due_day: Number(payload.due_day) || 10,
     contact_email: payload.contact_email || null,
     contact_phone: payload.contact_phone || null,
+    website_contact_phone: payload.website_contact_phone || null,
+    apartment_contact_phone: payload.apartment_contact_phone || null,
     payment_note: payload.payment_note || null,
   };
   const { data, error } = await client.from('app_settings').upsert(record).select().single();

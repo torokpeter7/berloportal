@@ -1,13 +1,15 @@
 -- Alap seed adatok.
 -- Nem tartalmaz demonstrációs bérlői adatokat.
 
-insert into public.app_settings (id, company_name, currency, due_day, contact_email, contact_phone, payment_note)
+insert into public.app_settings (id, company_name, currency, due_day, contact_email, contact_phone, website_contact_phone, apartment_contact_phone, payment_note)
 OVERRIDING SYSTEM VALUE
 values (
   1,
   'Albérletkezelő',
   'HUF',
   10,
+  null,
+  null,
   null,
   null,
   'Az aktuális havi elszámolás a hónap első napján készül.'
@@ -18,4 +20,6 @@ set company_name = excluded.company_name,
     due_day = excluded.due_day,
     contact_email = excluded.contact_email,
     contact_phone = excluded.contact_phone,
+    website_contact_phone = excluded.website_contact_phone,
+    apartment_contact_phone = excluded.apartment_contact_phone,
     payment_note = excluded.payment_note;

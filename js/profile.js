@@ -6,6 +6,7 @@ export async function renderPage({ root, profile, notify }) {
   document.title = 'Profil - Albérletkezelő';
   const titleNode = document.querySelector('[data-page-title]');
   if (titleNode) titleNode.textContent = 'Profil';
+  const isTenant = profile.role === 'tenant';
 
   setLoadingState(root, 'Profil betöltése...');
 
@@ -15,16 +16,16 @@ export async function renderPage({ root, profile, notify }) {
         <div class="hero-copy">
           <p class="eyebrow">Saját profil</p>
           <h2>Fiók és kapcsolat adatok.</h2>
-          <p>Itt módosíthatod a saját nevedet, telefonszámodat, e-mail címedet és jelszavadat.</p>
+          <p>${isTenant ? 'Itt módosíthatod a telefonszámodat és a jelszavadat.' : 'Itt módosíthatod a saját nevedet, telefonszámodat, e-mail címedet és jelszavadat.'}</p>
         </div>
       </section>
       <section class="grid-2">
         <article class="card">
-          <div class="card-header"><div><h3>Profil adatok</h3><p>Pofil közvetlen szerkesztése.</p></div></div>
+          <div class="card-header"><div><h3>Profil adatok</h3><p>${isTenant ? 'A telefonszámodat módosíthatod.' : 'Profil közvetlen szerkesztése.'}</p></div></div>
           <form id="profile-form" class="form-grid">
-            <label class="form-field"><span>Teljes név</span><input type="text" name="full_name" value="${escapeHtml(profile.full_name || '')}" required></label>
+            <label class="form-field"><span>Teljes név</span><input type="text" name="full_name" value="${escapeHtml(profile.full_name || '')}" ${isTenant ? 'readonly' : 'required'}></label>
             <label class="form-field"><span>Telefon</span><input type="text" name="phone" value="${escapeHtml(profile.phone || '')}"></label>
-            <label class="form-field"><span>E-mail</span><input type="email" name="email" value="${escapeHtml(profile.email || '')}"></label>
+            <label class="form-field"><span>E-mail</span><input type="email" name="email" value="${escapeHtml(profile.email || '')}" ${isTenant ? 'readonly' : ''}></label>
             <button class="btn btn-primary" type="submit">Profil mentése</button>
           </form>
         </article>
@@ -57,19 +58,28 @@ export async function renderPage({ root, profile, notify }) {
 function wireProfileForms(profile, notify) {
   const profileForm = document.getElementById('profile-form');
   const securityForm = document.getElementById('security-form');
+  const isTenant = profile.role === 'tenant';
 
   profileForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const payload = Object.fromEntries(new FormData(profileForm).entries());
     try {
       const client = await getSupabaseClient();
-      const { error } = await client.from('profiles').update({
-        full_name: payload.full_name,
-        phone: payload.phone,
-        email: payload.email,
-      }).eq('id', profile.id);
+      const profileUpdate = isTenant
+        ? { phone: payload.phone }
+        : {
+            full_name: payload.full_name,
+            phone: payload.phone,
+            email: payload.email,
+          };
+      const { error } = await client.from('profiles').update(profileUpdate).eq('id', profile.id);
       if (error) throw error;
-      await updateCurrentUser({ email: payload.email, metadata: { full_name: payload.full_name, phone: payload.phone } });
+      await updateCurrentUser({
+        ...(isTenant ? {} : { email: payload.email }),
+        metadata: isTenant
+          ? { phone: payload.phone }
+          : { full_name: payload.full_name, phone: payload.phone },
+      });
       notify('Profil frissítve.', 'success');
     } catch (error) {
       notify(error.message, 'error');

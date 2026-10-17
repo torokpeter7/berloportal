@@ -35,7 +35,7 @@ function adminDashboard(data) {
   ];
 
   return `
-    <section class="page-section hero-panel">
+    <section class="page-section hero-panel admin-dashboard-hero">
       <div class="hero-copy">
         <p class="eyebrow">Admin áttekintés</p>
         <h2>Átlátható pénzügyi és üzemeltetési vezérlőpult.</h2>
@@ -59,7 +59,7 @@ function adminDashboard(data) {
         </article>
       `).join('')}
     </section>
-    <section class="grid-2">
+    <section class="grid-1">
       <article class="card">
         <div class="card-header">
           <div>
@@ -68,15 +68,6 @@ function adminDashboard(data) {
           </div>
         </div>
         ${renderStatementsTable(data.recentStatements)}
-      </article>
-      <article class="card">
-        <div class="card-header">
-          <div>
-            <h3>Friss szerződések</h3>
-            <p>Aktív és közelmúltbeli bérleti viszonyok.</p>
-          </div>
-        </div>
-        ${renderLeasesList(data.recentLeases)}
       </article>
     </section>
   `;
@@ -93,18 +84,18 @@ function tenantDashboard(data, profile) {
   const paidState = latestStatement?.is_paid ? 'Befizetve' : 'Tartozik';
 
   return `
-    <section class="page-section hero-panel">
+    <section class="page-section hero-panel tenant-dashboard-hero">
       <div class="hero-copy">
         <p class="eyebrow">Albérlői áttekintés</p>
         <h2>Üdv, ${escapeHtml(profile.full_name || profile.email)}.</h2>
-        <p>Itt a saját lakbér, rezsi, dokumentum és üzenet adataidat látod.</p>
+        <p>Itt a saját lakbér- és rezsiadataidat látod egy helyen.</p>
       </div>
       <div class="badge-row">
         <span class="tag status-neutral"><i class="fa-solid fa-bell"></i> ${unreadNotifications} olvasatlan</span>
         <span class="tag ${latestStatement?.is_paid ? 'status-paid' : 'status-due'}"><i class="fa-solid ${latestStatement?.is_paid ? 'fa-circle-check' : 'fa-circle-exclamation'}"></i> ${paidState}</span>
       </div>
     </section>
-    <section class="stat-grid">
+    <section class="stat-grid tenant-stat-grid">
       <article class="stat-card"><div class="stat-label">Lakbér</div><div class="stat-value">${formatCurrency(
   latestStatement && !latestStatement.is_paid
     ? latestStatement.rent_amount
@@ -135,19 +126,6 @@ function tenantDashboard(data, profile) {
             <div class="metric-item"><span>Havi díj</span><strong>${formatCurrency(data.lease.monthly_rent)}</strong></div>
           </div>
         ` : '<div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-house-circle-exclamation"></i></div><h3>Nincs aktív szerződés</h3><p>Az admin még nem rendelt hozzád bérleményt.</p></div>'}
-      </article>
-      <article class="card">
-        <div class="card-header">
-          <div>
-            <h3>Üzenetek és dokumentumok</h3>
-            <p>Az utolsó releváns elemek.</p>
-          </div>
-        </div>
-        <div class="metric-list">
-          <div class="metric-item"><span>Dokumentumok</span><strong>${data.documents.length}</strong></div>
-          <div class="metric-item"><span>Üzenetek</span><strong>${data.notifications.length}</strong></div>
-        </div>
-        <!-- <div style="margin-top:16px">${renderStatementsTable(data.statements.slice(0, 4))}</div> -->
       </article>
     </section>
     ${renderNewNotificationModal(data.notifications || [])}
@@ -269,29 +247,6 @@ function renderStatementsTable(rows) {
           `).join('')}
         </tbody>
       </table>
-    </div>
-  `;
-}
-
-function renderLeasesList(rows) {
-  if (!rows || rows.length === 0) {
-    return '<div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-file-contract"></i></div><h3>Nincs még szerződés</h3><p>Az új albérleti szerződések itt jelennek meg.</p></div>';
-  }
-
-  return `
-    <div class="metric-list">
-      ${rows.map((row) => `
-        <div class="metric-item">
-          <div>
-            <strong>${escapeHtml(row.apartment?.title || 'Nincs megadva')}</strong>
-            <div class="small-muted">${escapeHtml(row.tenant?.full_name || row.tenant?.email || 'Ismeretlen bérlő')}</div>
-          </div>
-          <div style="text-align:right">
-            <strong>${formatCurrency(row.monthly_rent)}</strong>
-            <div class="small-muted">${formatDate(row.start_date)} - ${row.end_date ? formatDate(row.end_date) : 'Folyamatban'}</div>
-          </div>
-        </div>
-      `).join('')}
     </div>
   `;
 }

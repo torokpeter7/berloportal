@@ -27,7 +27,7 @@ export async function renderPage({ root, profile, notify }) {
         <div class="hero-copy">
           <p class="eyebrow">Értesítések</p>
           <h2>${canEdit ? 'Admin üzenetek küldése.' : 'A saját üzeneteid.'}</h2>
-          <p>Az admin közvetlen üzenetet küldhet, az albérlő pedig kizárólag a saját értesítéseit látja.</p>
+          <!--<p>Az admin közvetlen üzenetet küldhet, az albérlő pedig kizárólag a saját értesítéseit látja.</p> -->
         </div>
         <div class="page-actions">
           ${canEdit ? '<button class="btn btn-primary" type="button" data-compose-message><i class="fa-solid fa-paper-plane"></i> Üzenet küldése</button>' : ''}

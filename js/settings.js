@@ -33,7 +33,8 @@ export async function renderPage({ root, profile, notify }) {
             <label class="form-field"><span>Valuta</span><input type="text" name="currency" value="${escapeHtml(settings?.currency || 'HUF')}" required></label>
             <label class="form-field"><span>Fizetési határnap</span><input type="number" name="due_day" value="${settings?.due_day || 10}" min="1" max="31"></label>
             <label class="form-field"><span>Kapcsolati e-mail</span><input type="email" name="contact_email" value="${escapeHtml(settings?.contact_email || '')}"></label>
-            <label class="form-field"><span>Kapcsolati telefon</span><input type="text" name="contact_phone" value="${escapeHtml(settings?.contact_phone || '')}"></label>
+            <label class="form-field"><span>Weboldal hibabejelentési telefonszám</span><input type="text" name="website_contact_phone" value="${escapeHtml(settings?.website_contact_phone || settings?.contact_phone || '')}"></label>
+            <label class="form-field"><span>Albérlet hibabejelentési telefonszám</span><input type="text" name="apartment_contact_phone" value="${escapeHtml(settings?.apartment_contact_phone || settings?.contact_phone || '')}"></label>
             <label class="form-field"><span>Fizetési megjegyzés</span><textarea name="payment_note" rows="4">${escapeHtml(settings?.payment_note || '')}</textarea></label>
             <div class="modal-footer" style="grid-column:1 / -1; justify-content:flex-start">
               <button class="btn btn-primary" type="submit">Mentés</button>

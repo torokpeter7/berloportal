@@ -167,11 +167,10 @@ function renderSummary(statement) {
 
   return `
     <div class="metric-list">
+      <div class="metric-item"><span>Albérlet</span><strong>${escapeHtml(statement.apartment?.title || statement.apartment?.address || '-')}</strong></div>
       <div class="metric-item"><span>Hónap</span><strong>${formatMonth(statement.billing_month)}</strong></div>
       <div class="metric-item"><span>Lakbér</span><strong>${formatCurrency(statement.rent_amount)}</strong></div>
-      <div class="metric-item"><span>Összes fizetendő</span><strong>${formatCurrency(statement.total_amount || statement.rent_amount)}</strong></div>
       <div class="metric-item"><span>Állapot</span><strong>${statement.is_paid ? 'Befizetve' : 'Nincs befizetve'}</strong></div>
-      <div class="metric-item"><span>Befizetés dátuma</span><strong>${statement.paid_at ? formatDate(statement.paid_at) : '-'}</strong></div>
     </div>
   `;
 }
@@ -304,8 +303,6 @@ function renderStatementsTable(statements, canEdit, showAll) {
         <thead>
           <tr>
             <th>Hónap</th>
-            <th>Albérlet</th>
-            <th>Bérlő</th>
             <th>Összes fizetendő</th>
             <th>Státusz</th>
             ${canEdit ? '<th>Műveletek</th>' : ''}
@@ -315,8 +312,6 @@ function renderStatementsTable(statements, canEdit, showAll) {
           ${visibleStatements.map((statement) => `
             <tr>
               <td>${formatMonth(statement.billing_month)}</td>
-              <td>${escapeHtml(statement.apartment?.title || '-')}</td>
-              <td>${escapeHtml(statement.tenant?.full_name || statement.tenant?.email || '-')}</td>
               <td>${formatCurrency(statement.total_amount)}</td>
               <td><span class="status-badge ${statement.is_paid ? 'status-paid' : 'status-due'}">${statement.is_paid ? 'Befizetve' : 'Tartozik'}</span></td>
               ${canEdit ? `
@@ -373,8 +368,6 @@ function renderUtilityBillsTable(utilityBills, canEdit, showAll) {
           <tr>
             <th>Típus</th>
             <th>Elszámolási időszak</th>
-            <th>Albérlet</th>
-            <th>Bérlő</th>
             <th>Végösszeg</th>
             <th>Státusz</th>
             ${canEdit ? '<th>Műveletek</th>' : ''}
@@ -385,8 +378,6 @@ function renderUtilityBillsTable(utilityBills, canEdit, showAll) {
             <tr>
               <td>${escapeHtml(bill.utility_type === 'other' && bill.label ? `${UTILITY_LABELS.other}: ${bill.label}` : (UTILITY_LABELS[bill.utility_type] || bill.utility_type))}</td>
               <td>${formatDate(bill.period_start)} - ${formatDate(bill.period_end)}</td>
-              <td>${escapeHtml(bill.apartment?.title || '-')}</td>
-              <td>${escapeHtml(bill.tenant?.full_name || bill.tenant?.email || '-')}</td>
               <td>${formatCurrency(bill.total_amount)}</td>
               <td><span class="status-badge ${bill.is_paid ? 'status-paid' : 'status-due'}">${bill.is_paid ? 'Befizetve' : 'Tartozik'}</span></td>
               ${canEdit ? `
@@ -466,19 +457,14 @@ function renderUtilityModal(leases) {
           <input type="hidden" name="apartment_id">
           <input type="hidden" name="tenant_id">
           <label class="form-field"><span>Típus</span><select name="utility_type" required><option value="electric">Villany</option><option value="water">Víz</option><option value="gas">Gáz</option><option value="other">Egyéb</option></select></label>
-          <label class="form-field" data-utility-label-field style="display:none"><span>Megnevezés</span><input type="text" name="label" placeholder="MOHU szemétdíj, Közös költség..."></label>
+          <label class="form-field" data-utility-label-field hidden><span>Megnevezés</span><input type="text" name="label"></label>
           <label class="form-field"><span>Szerződés</span><select name="lease_id" required>${leaseOptions}</select></label>
           <label class="form-field"><span>Elszámolás kezdete</span><input type="date" name="period_start" required></label>
           <label class="form-field"><span>Elszámolás vége</span><input type="date" name="period_end" required></label>
           <label class="form-field"><span>Végösszeg</span><input type="number" step="1" name="total_amount" required></label>
-          <label class="form-field"><span>Beérkezett</span><input type="date" name="received_at"></label>
-          <label class="form-field"><span>Fizetési határidő</span><input type="date" name="due_date"></label>
           <label class="form-field"><span>Befizetve</span><select name="is_paid"><option value="false">Nincs befizetve</option><option value="true">Befizetve</option></select></label>
-          <label class="form-field"><span>Befizetés dátuma</span><input type="date" name="paid_at"></label>
-          <label class="form-field"><span>Fizetési mód</span><input type="text" name="payment_method" placeholder="Átutalás, készpénz..."></label>
           <label class="form-field" style="grid-column:1 / -1"><span>Megjegyzés</span><textarea name="notes" rows="3"></textarea></label>
           <div class="modal-footer" style="grid-column:1 / -1">
-            <div class="small-muted">A fogyasztás és az összeg automatikusan számolódik mentéskor.</div>
             <div class="toolbar">
               <button class="btn btn-secondary" type="button" data-close-modal>Mégse</button>
               <button class="btn btn-primary" type="submit">Mentés</button>
@@ -500,19 +486,6 @@ function wireBillingActions(root, statements, utilityBills, leases, apartments, 
 
   wireModalClose(statementModal);
   wireModalClose(utilityModal);
-
-  const utilityTypeSelect = utilityForm.querySelector('[name="utility_type"]');
-  const utilityLabelField = utilityForm.querySelector('[data-utility-label-field]');
-  const utilityLabelInput = utilityForm.querySelector('[name="label"]');
-
-  function syncUtilityLabelField() {
-    const isOther = utilityTypeSelect.value === 'other';
-    utilityLabelField.style.display = isOther ? '' : 'none';
-    utilityLabelInput.required = isOther;
-    if (!isOther) utilityLabelInput.value = '';
-  }
-
-  utilityTypeSelect.addEventListener('change', syncUtilityLabelField);
 
   root.querySelector('[data-pay-all-outstanding]')?.addEventListener('click', async (event) => {
     const button = event.currentTarget;
@@ -541,6 +514,19 @@ function wireBillingActions(root, statements, utilityBills, leases, apartments, 
   const statementLeaseSelect = statementForm.querySelector('[name="lease_id"]');
   const statementRentInput = statementForm.querySelector('[name="rent_amount"]');
   const utilityLeaseSelect = utilityForm.querySelector('[name="lease_id"]');
+  const utilityTypeSelect = utilityForm.querySelector('[name="utility_type"]');
+  const utilityLabelField = utilityForm.querySelector('[data-utility-label-field]');
+  const utilityLabelInput = utilityForm.querySelector('[name="label"]');
+
+  const updateUtilityLabelField = () => {
+    const isOther = utilityTypeSelect.value === 'other';
+    utilityLabelField.hidden = !isOther;
+    utilityLabelField.classList.toggle('hidden', !isOther);
+    utilityLabelInput.required = isOther;
+    if (!isOther) utilityLabelInput.value = '';
+  };
+
+  updateUtilityLabelField();
 
   root.querySelector('[data-add-statement]')?.addEventListener('click', () => {
     statementForm.reset();
@@ -562,6 +548,7 @@ function wireBillingActions(root, statements, utilityBills, leases, apartments, 
     utilityForm.reset();
     utilityForm.id.value = '';
     utilityForm.is_paid.value = 'false';
+    updateUtilityLabelField();
     const firstLease = leases[0];
     if (firstLease) {
       utilityLeaseSelect.value = firstLease.id;
@@ -569,7 +556,6 @@ function wireBillingActions(root, statements, utilityBills, leases, apartments, 
       utilityForm.tenant_id.value = firstLease.tenant_id || '';
     }
     utilityTitle.textContent = 'Új közüzemi számla';
-    syncUtilityLabelField();
     openModal(utilityModal);
   });
 
@@ -589,6 +575,8 @@ function wireBillingActions(root, statements, utilityBills, leases, apartments, 
       utilityForm.tenant_id.value = lease.tenant_id || '';
     }
   });
+
+  utilityTypeSelect.addEventListener('change', updateUtilityLabelField);
 
   root.querySelectorAll('[data-edit-statement]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -624,19 +612,15 @@ function wireBillingActions(root, statements, utilityBills, leases, apartments, 
       if (!bill) return;
       utilityForm.id.value = bill.id;
       utilityForm.utility_type.value = bill.utility_type;
-      utilityForm.label.value = bill.label || '';
-      syncUtilityLabelField();
+      utilityLabelInput.value = bill.label || '';
+      updateUtilityLabelField();
       utilityForm.lease_id.value = bill.lease_id;
       utilityForm.apartment_id.value = bill.apartment_id || '';
       utilityForm.tenant_id.value = bill.tenant_id || '';
       utilityForm.period_start.value = bill.period_start || '';
       utilityForm.period_end.value = bill.period_end || '';
       utilityForm.total_amount.value = bill.total_amount || 0;
-      utilityForm.received_at.value = bill.received_at || '';
-      utilityForm.due_date.value = bill.due_date || '';
       utilityForm.is_paid.value = String(bill.is_paid);
-      utilityForm.paid_at.value = bill.paid_at ? bill.paid_at.slice(0, 10) : '';
-      utilityForm.payment_method.value = bill.payment_method || '';
       utilityForm.notes.value = bill.notes || '';
       utilityTitle.textContent = 'Közüzemi számla szerkesztése';
       openModal(utilityModal);

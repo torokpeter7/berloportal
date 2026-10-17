@@ -9,6 +9,7 @@ const PAGE_MODULES = {
   billing: () => import('./billing.js'),
   documents: () => import('./documents.js'),
   notifications: () => import('./notifications.js'),
+  reports: () => import('./reports.js'),
   profile: () => import('./profile.js'),
   settings: () => import('./settings.js'),
 };
@@ -20,6 +21,7 @@ const NAV_ITEMS = [
   { page: 'billing', icon: 'fa-file-invoice-dollar', label: 'Havi elszámolás', role: 'all' },
   { page: 'documents', icon: 'fa-file-pdf', label: 'Dokumentumok', role: 'all' },
   { page: 'notifications', icon: 'fa-bell', label: 'Értesítések', role: 'all' },
+  { page: 'reports', icon: 'fa-triangle-exclamation', label: 'Hibabejelentés', role: 'all' },
   { page: 'profile', icon: 'fa-user-gear', label: 'Profil', role: 'all' },
   { page: 'settings', icon: 'fa-gear', label: 'Beállítások', role: 'admin' },
 ];
@@ -63,70 +65,36 @@ function renderLoginPage() {
   const config = getSupabaseConfig();
   app.innerHTML = `
     <main class="auth-layout">
-      <section class="auth-hero">
-        <div class="auth-badge"><i class="fa-solid fa-house-chimney-window"></i> Albérletkezelő</div>
-        <h1>Albérletkezelő</h1>
-        <p>Albérleteddel kapcsolatos dolgok egy helyen.</p>
-        <div class="auth-points">
-          <div><i class="fa-solid fa-chart-line"></i> Pénzügyi dashboard</div>
-          <div><i class="fa-solid fa-folder-tree"></i> Dokumentumkezelés</div>
-        </div>
-      </section>
-      <section class="auth-card">
-        <div class="auth-card-head">
-          <h2>Bejelentkezés</h2>
-        </div>
-        <form id="login-form" class="form-grid">
-          <label class="form-field">
-            <span>E-mail</span>
-            <input type="email" name="email" placeholder="admin@pelda.hu" required>
-          </label>
-          <label class="form-field">
-            <span>Jelszó</span>
-            <input type="password" name="password" placeholder="••••••••" required>
-          </label>
-          <div class="auth-actions">
-            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-right-to-bracket"></i> Belépés</button>
-          </div>
-        </form>
+      <div class="auth-login">
+        <h1>Bérlőportál<span>Bejelentkezés</span></h1>
+        <section class="auth-card">
+          <form id="login-form" class="form-grid">
+            <label class="form-field">
+              <input type="email" name="email" placeholder="E-mail" aria-label="E-mail" required>
+            </label>
+            <label class="form-field">
+              <input type="password" name="password" placeholder="Jelszó" aria-label="Jelszó" required>
+            </label>
+            <div class="auth-actions">
+              <button class="btn btn-primary auth-submit" type="submit">Belépés</button>
+            </div>
+          </form>
 
-        <form id="register-form" class="form-grid hidden">
-          <label class="form-field">
-            <span>Teljes név</span>
-            <input type="text" name="fullName" placeholder="Kovács Anna" required>
-          </label>
-          <label class="form-field">
-            <span>E-mail</span>
-            <input type="email" name="email" placeholder="anna@pelda.hu" required>
-          </label>
-          <label class="form-field">
-            <span>Jelszó</span>
-            <input type="password" name="password" minlength="6" placeholder="Legalább 6 karakter" required>
-          </label>
-          <label class="form-field">
-            <span>Telefon</span>
-            <input type="text" name="phone" placeholder="+36 20 123 4567">
-          </label>
-          <div class="auth-actions">
-            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-user-plus"></i> Fiók létrehozása</button>
-            <button class="btn btn-secondary" type="button" id="toggle-login">Vissza</button>
-          </div>
-        </form>
-
-        <form id="supabase-config-form" class="setup-panel ${hasSupabaseConfig() ? 'hidden' : ''}">
-          <h3>Supabase kapcsolati adatok</h3>
-          <p>Első használatkor itt add meg a projekt URL-jét és anon kulcsát. A böngésző megjegyzi helyileg.</p>
-          <label class="form-field">
-            <span>Project URL</span>
-            <input type="url" name="url" value="${escapeHtml(config.url)}" placeholder="https://xxxx.supabase.co" required>
-          </label>
-          <label class="form-field">
-            <span>Anon key</span>
-            <textarea name="anonKey" rows="4" placeholder="eyJ..." required>${escapeHtml(config.anonKey)}</textarea>
-          </label>
-          <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Mentés</button>
-        </form>
-      </section>
+          <form id="supabase-config-form" class="setup-panel ${hasSupabaseConfig() ? 'hidden' : ''}">
+            <h3>Supabase kapcsolati adatok</h3>
+            <p>Első használatkor itt add meg a projekt URL-jét és anon kulcsát. A böngésző megjegyzi helyileg.</p>
+            <label class="form-field">
+              <span>Project URL</span>
+              <input type="url" name="url" value="${escapeHtml(config.url)}" placeholder="https://xxxx.supabase.co" required>
+            </label>
+            <label class="form-field">
+              <span>Anon key</span>
+              <textarea name="anonKey" rows="4" placeholder="eyJ..." required>${escapeHtml(config.anonKey)}</textarea>
+            </label>
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Mentés</button>
+          </form>
+        </section>
+      </div>
     </main>
   `;
 }
@@ -137,15 +105,18 @@ async function wireLoginInteractions() {
   const configForm = qs('#supabase-config-form');
   const toggleRegister = qs('#toggle-register');
   const toggleLogin = qs('#toggle-login');
+  const loginOptions = qs('#login-options');
 
   toggleRegister?.addEventListener('click', () => {
     loginForm.classList.add('hidden');
     registerForm.classList.remove('hidden');
+    loginOptions.classList.add('hidden');
   });
 
   toggleLogin?.addEventListener('click', () => {
     registerForm.classList.add('hidden');
     loginForm.classList.remove('hidden');
+    loginOptions.classList.remove('hidden');
   });
 
   configForm?.addEventListener('submit', async (event) => {

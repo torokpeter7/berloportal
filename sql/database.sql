@@ -10,10 +10,16 @@ create table if not exists public.app_settings (
   due_day integer not null default 10 check (due_day between 1 and 31),
   contact_email text,
   contact_phone text,
+  website_contact_phone text,
+  apartment_contact_phone text,
   payment_note text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.app_settings
+  add column if not exists website_contact_phone text,
+  add column if not exists apartment_contact_phone text;
 
 create table if not exists public.apartments (
   id uuid primary key default gen_random_uuid(),

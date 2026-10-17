@@ -1,7 +1,7 @@
 import { ensureStaffOrRedirect } from './app.js';
 import { isAdmin } from './auth.js';
 import { archiveApartment, listApartments, saveApartment } from './data.js';
-import { escapeHtml, formatCurrency, formatNumber, openModal, closeModal, wireModalClose, setLoadingState, showToast, confirmDialog } from './utils.js';
+import { escapeHtml, formatCurrency, openModal, closeModal, wireModalClose, setLoadingState, showToast, confirmDialog } from './utils.js';
 
 export async function renderPage({ root, profile, notify }) {
   const allowed = await ensureStaffOrRedirect(profile);
@@ -51,15 +51,13 @@ function renderTable(apartments, canManage) {
   }
 
   return `
-    <div class="table-wrap">
+    <div class="table-wrap apartments-table">
       <table>
         <thead>
           <tr>
             <th>Név</th>
             <th>Kód</th>
             <th>Cím</th>
-            <th>Alapterület</th>
-            <th>Szobák</th>
             <th>Havi díj</th>
             <th>Státusz</th>
             ${canManage ? '<th>Műveletek</th>' : ''}
@@ -68,18 +66,16 @@ function renderTable(apartments, canManage) {
         <tbody>
           ${apartments.map((apartment) => `
             <tr>
-              <td>${escapeHtml(apartment.title)}</td>
-              <td>${escapeHtml(apartment.code || '-')}</td>
-              <td>${escapeHtml(apartment.address || '-')}</td>
-              <td>${apartment.area_sqm ? `${formatNumber(apartment.area_sqm)} m²` : '-'}</td>
-              <td>${apartment.rooms ?? '-'}</td>
-              <td>${formatCurrency(apartment.monthly_rent)}</td>
-              <td><span class="status-badge ${apartment.is_active ? 'status-paid' : 'status-neutral'}">${apartment.is_active ? 'Aktív' : 'Archivált'}</span></td>
+              <td data-label="Név">${escapeHtml(apartment.title)}</td>
+              <td data-label="Kód">${escapeHtml(apartment.code || '-')}</td>
+              <td data-label="Cím">${escapeHtml(apartment.address || '-')}</td>
+              <td data-label="Havi díj">${formatCurrency(apartment.monthly_rent)}</td>
+              <td data-label="Státusz"><span class="status-badge ${apartment.is_active ? 'status-paid' : 'status-neutral'}">${apartment.is_active ? 'Aktív' : 'Archivált'}</span></td>
               ${canManage ? `
-              <td>
+              <td data-label="Műveletek">
                 <div class="toolbar">
-                  <button class="btn btn-secondary btn-sm" type="button" data-edit-apartment="${apartment.id}"><i class="fa-solid fa-pen"></i> Szerkesztés</button>
-                  <button class="btn btn-danger btn-sm" type="button" data-delete-apartment="${apartment.id}"><i class="fa-solid fa-trash"></i> Törlés</button>
+                  <button class="btn btn-secondary btn-sm icon-button" type="button" data-edit-apartment="${apartment.id}" aria-label="Szerkesztés" title="Szerkesztés"><i class="fa-solid fa-pen"></i></button>
+                  <button class="btn btn-danger btn-sm icon-button" type="button" data-delete-apartment="${apartment.id}" aria-label="Törlés" title="Törlés"><i class="fa-solid fa-trash"></i></button>
                 </div>
               </td>
               ` : ''}
@@ -107,8 +103,6 @@ function renderModal() {
           <label class="form-field"><span>Név</span><input type="text" name="title" required></label>
           <label class="form-field"><span>Kód</span><input type="text" name="code" placeholder="A-101"></label>
           <label class="form-field" style="grid-column:1 / -1"><span>Cím</span><input type="text" name="address" required></label>
-          <label class="form-field"><span>Alapterület (m²)</span><input type="number" step="0.1" name="area_sqm"></label>
-          <label class="form-field"><span>Szobák száma</span><input type="number" step="1" name="rooms"></label>
           <label class="form-field"><span>Havi lakbér</span><input type="number" step="1" name="monthly_rent" required></label>
           <label class="form-field"><span>Aktív</span><select name="is_active"><option value="true">Igen</option><option value="false">Nem</option></select></label>
           <label class="form-field" style="grid-column:1 / -1"><span>Megjegyzés</span><textarea name="notes" rows="4"></textarea></label>
@@ -144,8 +138,6 @@ function wireApartmentActions(root, apartments, notify) {
       form.title.value = apartment.title || '';
       form.code.value = apartment.code || '';
       form.address.value = apartment.address || '';
-      form.area_sqm.value = apartment.area_sqm ?? '';
-      form.rooms.value = apartment.rooms ?? '';
       form.monthly_rent.value = apartment.monthly_rent ?? '';
       form.is_active.value = apartment.is_active ? 'true' : 'false';
       form.notes.value = apartment.notes || '';
