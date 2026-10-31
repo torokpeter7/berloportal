@@ -1,5 +1,5 @@
 const FIXED_SUPABASE_CONFIG = {
-  url: 'https://supabase.torokhomelab.cloud',
+  url: 'https://supabase.torqon.cloud',
   anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzg2MDg4NjEyLCJleHAiOjE5NDM3Njg2MTJ9.jhDyUd8Ah3Yx8FiqQ3IQQ0DXAr1hMANW1Aao4SwwQAI',
 };
 
